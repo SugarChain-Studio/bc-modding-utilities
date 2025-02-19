@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "allowJs": true,
+        "lib": [
+            "es2021",
+            "dom",
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "bondage-club-mod-sdk": ["node_modules/bondage-club-mod-sdk"]
+        }
+    },
+    "include": [
+        "utils/**/*.js",
+        "utils/Typedef.d.ts",
+        "node_modules/bc-stubs/bc/**/*.d.ts"
+    ]
+}
