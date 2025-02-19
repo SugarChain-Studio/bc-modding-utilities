@@ -11,9 +11,5 @@
             "bondage-club-mod-sdk": ["node_modules/bondage-club-mod-sdk"]
         }
     },
-    "include": [
-        "utils/**/*.js",
-        "utils/Typedef.d.ts",
-        "node_modules/bc-stubs/bc/**/*.d.ts"
-    ]
+    "include": ["src/**/*.js", "src/Typedef.d.ts", "node_modules/bc-stubs/bc/**/*.d.ts"]
 }

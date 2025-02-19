@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const packageJSON = require("./package.json");
+const packageJSON = require(path.join(process.cwd(), "package.json"));
 const commonjs = require("@rollup/plugin-commonjs");
 const resolve = require("@rollup/plugin-node-resolve");
 const replace = require("@rollup/plugin-replace");
