@@ -326,6 +326,7 @@ module.exports = (cliArgs) => {
 
     log(`Deploying to ${baseURL_}`);
     log(`Build time: ${new Date().toLocaleString("zh-CN", { hour12: false })}`);
+    log(`Artifact version: ${modInfo.version}${beta ? "-beta" : ""}`);
 
     return createRollupConfig(baseURL, modInfo, setting, utilsDir, beta);
 };
