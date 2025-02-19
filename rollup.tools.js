@@ -211,13 +211,18 @@ async function readAssetsMapping(startDir, assetDirs) {
 }
 
 /**
- * @param { string } curDir
- * @param { string } baseURL
- * @param { ReturnType<typeof buildModInfo> } modInfo
- * @param { ReturnType<typeof buildRollupSetting> } rollupSetting
- * @param { boolean } [betaFlag]
+ * 创建rollup配置
+ * @param { string } baseURL 部署的基础URL
+ * @param { ReturnType<typeof buildModInfo> } modInfo 从pacakge.json获取的mod信息, 参考 {@link buildModInfo}
+ * @param { ReturnType<typeof buildRollupSetting> } rollupSetting 从pacakge.json获取的rollup设置, 参考 {@link buildRollupSetting}
+ * @param { string } utilDir 工具目录
+ * @param { boolean } [betaFlag] 是否为beta模式
  */
-async function createRollupConfig(curDir, baseURL, modInfo, rollupSetting, betaFlag = false) {
+async function createRollupConfig(baseURL, modInfo, rollupSetting, utilDir, betaFlag = false) {
+    // 当前目录需要使用 __dirname, 它可能在多个子目录中被直接eval调用
+    // 使用process.cwd()则只能用在作为npm项目根目录的情况
+    const curDir = __dirname;
+
     const buildDestDir = `${process.env.INIT_CWD}/public/`;
     const curDirRelative = relativePath(".", curDir);
 
@@ -268,7 +273,7 @@ async function createRollupConfig(curDir, baseURL, modInfo, rollupSetting, betaF
             copy({
                 targets: [
                     {
-                        src: `${curDirRelative}/../loader.template.user.js`,
+                        src: `${curDirRelative}/${utilDir}/loader.template.user.js`,
                         dest: buildDestDir,
                         rename: rollupSetting.loaderName,
                         transform: (contents, filename) =>
@@ -284,7 +289,7 @@ async function createRollupConfig(curDir, baseURL, modInfo, rollupSetting, betaF
             }),
             alias({
                 entries: {
-                    "@mod-utils": `${curDir}/../utils`,
+                    "@mod-utils": `${curDir}/${utilDir}/src`,
                     "bondage-club-mod-sdk": `${curDir}/node_modules/bondage-club-mod-sdk`,
                 },
             }),
@@ -300,6 +305,7 @@ module.exports = (cliArgs) => {
     const debug = !!cliArgs.configDebug;
     const baseURL = cliArgs.configBaseURL;
     const beta = !!cliArgs.configBeta;
+    const utilsDir = cliArgs.configUtilsDir ? cliArgs.configUtilsDir : "utils";
 
     const modInfo = buildModInfo(packageJSON);
     const setting = buildRollupSetting(packageJSON, debug, beta);
@@ -316,5 +322,5 @@ module.exports = (cliArgs) => {
     log(`Deploying to ${baseURL_}`);
     log(`Build time: ${new Date().toLocaleString("zh-CN", { hour12: false })}`);
 
-    return createRollupConfig(__dirname, baseURL, modInfo, setting, beta);
+    return createRollupConfig(baseURL, modInfo, setting, utilsDir, beta);
 };
