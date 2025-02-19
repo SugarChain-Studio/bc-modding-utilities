@@ -10,6 +10,11 @@ const alias = require("@rollup/plugin-alias");
 const css = require("rollup-plugin-import-css");
 const { execSync, spawn } = require("child_process");
 
+function getLatestSemverTag() {
+    const ret = execSync("git describe --tags --abbrev=0").toString().trim();
+    return ret.startsWith("v") ? ret.substring(1) : ret;
+}
+
 /**
  * 分析相对路径，与path.relative()不同的是，返回的路径会保持"./"开头
  * @param {string} from
@@ -77,7 +82,7 @@ function buildModInfo(packageObj) {
     return {
         name: `${packageObj.displayName}`,
         fullName: `${packageObj.modFullName}`,
-        version: `${packageObj.version}`,
+        version: getLatestSemverTag(),
         repo: (() => {
             if (!packageObj.repository || !packageObj.repository.url) return undefined;
             if (packageObj.repository.url.startsWith("git+"))
