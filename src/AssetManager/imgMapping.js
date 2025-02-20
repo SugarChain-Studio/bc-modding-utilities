@@ -58,6 +58,20 @@ export function setupImgMapping() {
             return next(args);
         });
 
+        ModManager.hookFunction("ElementButton.CreateForActivity", 0, (args, next) => {
+            const _args = /** @type {any[]} */ (args);
+            const activity = _args[1];
+
+            const srcImage = activity.Item
+                ? Path.AssetPreviewIconPath(activity.Item.Asset)
+                : `Assets/Female3DCG/Activity/${activity.Activity.Name}.png`;
+            mapping.mapImg(srcImage, (image) => {
+                _args[4] = { ..._args[4], image };
+            });
+            
+            return next(args);
+        });
+
         const func = ModManager.randomGlobalFunction("ECHOMapping", (src) => mapping.mapImgSrc(src));
 
         ModManager.patchFunction("ElementButton._ParseIcons", {

@@ -88,7 +88,7 @@ export class Path {
      */
     static AssetPreviewIconPath(asset) {
         const _asset = "Asset" in asset ? asset.Asset : asset;
-        return `Assets/Female3DCG/${_asset.DynamicGroupName}/Preview/${_asset.Name}.png`;
+        return `${AssetGetPreviewPath(_asset)}/${_asset.Name}.png`;
     }
 
     /**
