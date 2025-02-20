@@ -56,6 +56,8 @@ class ImageMapping {
      */
     mapImg(src, accept) {
         let result = src;
+
+        if (result.startsWith("data:image") || result.startsWith("http")) return;
         if (this.custom[result]) result = this.custom[result];
         if (this.basic[result]) result = this.basic[result];
 
