@@ -1,7 +1,7 @@
-import { sleepUntil } from "@mod-utils/sleep";
+import { sleepUntil } from "../sleep";
 import ModManager from "../ModManager";
 import { assetOverrides, resourceBaseURL } from "../rollupHelper";
-import { Path } from "@mod-utils/path";
+import { Path } from "../path";
 import { Mapping } from "../ImageMapping";
 
 const mapping = Mapping();
@@ -68,7 +68,7 @@ export function setupImgMapping() {
             mapping.mapImg(srcImage, (image) => {
                 _args[4] = { ..._args[4], image };
             });
-            
+
             return next(args);
         });
 
