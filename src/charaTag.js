@@ -2,20 +2,21 @@ import ModManager from "./ModManager";
 
 const ECHO_INFO_TAG = "ECHO_INFO";
 
+const GLOBAL_INSTANCE_TAG = "ECHO_CHARA_TAG";
+
 /**
  * @typedef { Record<string,string> } CharacterTagInfo
  */
 
-/** @type {CharacterTagInfo} */
-const localTag = {}; // 本地标签
-
 /**
+ * @param {CharacterTagInfo} localTag
  * @param {number} [target]
  */
-function sendMyTag(target) {
+function sendMyTag(localTag, target) {
     ServerSend("ChatRoomChat", {
         Content: ECHO_INFO_TAG,
         Type: "Hidden",
+        ...(target ? { Target: target } : {}),
         Dictionary: [
             {
                 Type: ECHO_INFO_TAG,
@@ -43,14 +44,29 @@ function processOtherCharaTag(data) {
 }
 
 export class CharacterTag {
+    /** @type {CharacterTagInfo} */
+    localTag = {}; // 本地标签
+
+    constructor() {}
+
+    /**
+     * @returns {CharacterTag}
+     */
+    static instance() {
+        if (!globalThis[GLOBAL_INSTANCE_TAG]) {
+            globalThis[GLOBAL_INSTANCE_TAG] = new CharacterTag();
+        }
+        return globalThis[GLOBAL_INSTANCE_TAG];
+    }
+
     /**
      * @param {string} name
      * @param {string} version
      */
     static myTag(name, version) {
-        localTag[name] = version;
-        
-        const addTag = () => {
+        this.instance().localTag[name] = version;
+
+        const tagPlayer = () => {
             Player[ECHO_INFO_TAG] = {
                 ...Player[ECHO_INFO_TAG],
                 [name]: version,
@@ -58,23 +74,25 @@ export class CharacterTag {
         };
 
         if (Player && Player.MemberNumber) {
-            addTag();
+            tagPlayer();
         } else {
             ModManager.progressiveHook("LoginResponse", 10)
                 .next()
                 .inject((args, next) => {
-                    if (typeof args[0] !== "string") addTag();
+                    if (typeof args[0] !== "string") tagPlayer();
                 });
         }
     }
 
     static init() {
+        if (globalThis[GLOBAL_INSTANCE_TAG]) return;
+
         ModManager.progressiveHook("ChatRoomSyncMemberJoin", 10).inject((args, next) => {
-            sendMyTag(args[0].SourceMemberNumber);
+            sendMyTag(this.instance().localTag, args[0].SourceMemberNumber);
         });
 
         ModManager.progressiveHook("ChatRoomSync", 10).inject((args, next) => {
-            sendMyTag();
+            sendMyTag(this.instance().localTag);
         });
 
         ModManager.progressiveHook("ChatRoomMessage", 10).inject((args, next) => {
