@@ -46,6 +46,7 @@ function processOtherCharaTag(data) {
 export class CharacterTag {
     /** @type {CharacterTagInfo} */
     localTag = {}; // 本地标签
+    hooked = false;
 
     constructor() {}
 
@@ -85,7 +86,9 @@ export class CharacterTag {
     }
 
     static init() {
-        if (globalThis[GLOBAL_INSTANCE_TAG]) return;
+        const instance = this.instance();
+        if (instance.hooked) return;
+        instance.hooked = true;
 
         ModManager.progressiveHook("ChatRoomSyncMemberJoin", 10).inject((args, next) => {
             sendMyTag(this.instance().localTag, args[0].SourceMemberNumber);
