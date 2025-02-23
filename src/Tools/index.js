@@ -72,10 +72,11 @@ export class Tools {
     /**
      * 绘制更新函数
      * @param {Character} C 角色
-     * @param { {FrameTimer?:number} } data 绘制中的持久化数据
+     * @param { any } data 绘制中的持久化数据
+     * @param {number} [minFrameTime=30] 最小帧时间
      */
-    static drawUpdate(C, data) {
-        const FrameTime = Player.GraphicsSettings ? Math.max(30, Player.GraphicsSettings.AnimationQuality * 0.6) : 30;
+    static drawUpdate(C, data, minFrameTime = 30) {
+        const FrameTime = Player.GraphicsSettings ? Math.max(minFrameTime, Player.GraphicsSettings.AnimationQuality * 0.6) : 30;
 
         const now = CommonTime();
 
