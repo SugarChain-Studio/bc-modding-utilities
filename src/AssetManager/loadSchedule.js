@@ -103,12 +103,26 @@ export function requireGroup(group, resolve) {
     }
 }
 
+const loadMessage = {
+    en: {
+        start: "Start loading",
+        end: "Loading completed, time usage: ",
+    },
+    zh: {
+        start: "开始加载",
+        end: "加载完成，耗时：",
+    },
+};
+
 /**
  * 初始化身体组加载过程的事件，确保在加载完成后执行
  */
 export function runSetupLoad() {
+    const userLanguage = navigator.language.startsWith("zh") ? "zh" : "en";
+
     const mLoadGroup = () => {
-        log.info(`加载开始`);
+        log.info(loadMessage[userLanguage].start);
+
         const time = Date.now();
         // 先执行所有的直接加载事件（一般是自定义的组加载）
         runGroupLoad();
@@ -122,8 +136,9 @@ export function runSetupLoad() {
 
         isAfterLoaded = true;
         while (afterLoadWorks.length > 0) afterLoadWorks.shift()();
+        const end = Date.now();
 
-        log.info(`加载完成，耗时 ${Date.now() - time}ms`);
+        log.info(loadMessage[userLanguage].end + (end - time) + "ms");
     };
 
     if (AssetGroup.length > 50) {
