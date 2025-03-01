@@ -23,6 +23,12 @@ function addGroupEntry(prefix, src, selfOther, activityName) {
     );
 }
 
+/** @type {Partial<Record<AssetGroupItemName, string>>} */
+const AlterNames = {
+    ItemVulva: "ItemPenis",
+    ItemVulvaPiercings: "ItemGlans",
+}
+
 /**
  * @param { "Label-" | "" } prefix
  * @param { Translation.Entry } src
@@ -34,6 +40,10 @@ function addSimpleEntry(prefix, src, selfOther, activityName, groups) {
     RecordEntries(src).forEach(([lang, entry]) => {
         entries[lang] = groups.reduce((pv, groupName) => {
             pv[`${prefix}Chat${selfOther}-${groupName}-${activityName}`] = entry;
+
+            const altName = AlterNames[groupName];
+            if (altName) pv[`${prefix}Chat${selfOther}-${altName}-${activityName}`] = entry;
+
             return pv;
         }, entries[lang] || {});
     });
