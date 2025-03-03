@@ -78,7 +78,9 @@ export class Tools {
      * @param {number} [minFrameTime=30] 最小帧时间
      */
     static drawUpdate(C, data, minFrameTime = 30) {
-        const FrameTime = Player.GraphicsSettings ? Math.max(minFrameTime, Player.GraphicsSettings.AnimationQuality * 0.6) : 30;
+        const FrameTime = Player.GraphicsSettings
+            ? Math.max(minFrameTime, Player.GraphicsSettings.AnimationQuality * 0.6)
+            : 30;
 
         const now = CommonTime();
 
@@ -166,16 +168,16 @@ export class Tools {
 
     /**
      * 从物品组名、物品名、对话原型复制对话
-     * 
+     *
      * @example
      * ```js
      * const dialog = Tools.replicateTypedItemDialog(["ItemPelvis"],["幸运贞操带"],{CN:{SelectBase:"选择配置"}})
-     * 
+     *
      * // 上面的代码如同这样
      * const dialog = {
      *   CN: {
      *     "ItemPelvis幸运贞操带SelectBase": "选择配置"
-     *   } 
+     *   }
      * }
      * ```
      * @param {CustomGroupName[]} groupNames 物品组名
@@ -201,11 +203,11 @@ export class Tools {
     /**
      * 生成定制对话生成器
      * @param {string} prefix 前缀
-     * @returns { (...details: string[]) => string }
+     * @returns { (...details: any[]) => string }
      */
     static makeCustomDialogGenerator(prefix) {
         const fprefix = `${CustomDialogPrefix}${prefix}`;
-        return (...details)=> `${fprefix}${details.join("")}`;
+        return (...details) => `${fprefix}${details.map((v) => v.toString()).join("")}`;
     }
 
     /**
