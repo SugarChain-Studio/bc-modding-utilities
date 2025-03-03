@@ -1,3 +1,4 @@
+import { ChatRoomEvents } from "./Handlers";
 import ModManager from "./ModManager";
 
 const ECHO_INFO_TAG = "ECHO_INFO";
@@ -48,7 +49,7 @@ export class CharacterTag {
     localTag = {}; // 本地标签
     hooked = false;
 
-    constructor() {}
+    constructor() { }
 
     /**
      * @returns {CharacterTag}
@@ -86,6 +87,8 @@ export class CharacterTag {
     }
 
     static init() {
+        ChatRoomEvents.init();
+
         const instance = this.instance();
         if (instance.hooked) return;
         instance.hooked = true;
@@ -98,10 +101,7 @@ export class CharacterTag {
             sendMyTag(this.instance().localTag);
         });
 
-        ModManager.progressiveHook("ChatRoomMessage", 10).inject((args, next) => {
-            const [data] = args;
-            if (data.Type === "Hidden") processOtherCharaTag(data);
-        });
+        ChatRoomEvents.instance.on("Hidden", (data) => processOtherCharaTag(data));
     }
 
     /**

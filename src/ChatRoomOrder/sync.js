@@ -1,5 +1,6 @@
 import ModManager from "@mod-utils/ModManager";
 import { key } from "./constant";
+import { ChatRoomEvents } from "@mod-utils/Handlers";
 
 let doSync = false;
 function syncRun() {
@@ -70,6 +71,8 @@ function validate(data) {
 }
 
 export function setupSync() {
+    ChatRoomEvents.init();
+
     ModManager.hookFunction("ChatRoomSync", 10, (args, next) => {
         setSync();
         next(args);
@@ -80,17 +83,12 @@ export function setupSync() {
         next(args);
     });
 
-    ModManager.hookFunction("ChatRoomMessage", 10, (args, next) => {
-        let data = args[0];
-        if (data.Content === "ServerEnter") {
-            setSync();
-        }
-        next(args);
-    });
-
-    ModManager.hookFunction("ChatRoomMessage", 0, (args, next) => {
-        const { Type, Content, Sender, Dictionary } = args[0];
-        if (Type === "Hidden" && Content === key) {
+    ChatRoomEvents.instance.on("Action", ({Content})=>{
+        if(Content === "ServerEnter") setSync();
+    })
+    
+    ChatRoomEvents.instance.on("Hidden", ({ Type, Content, Sender, Dictionary })=>{
+        if(Content === key) {
             /** @type {XCharacter}*/
             const target = ChatRoomCharacter.find((c) => c.MemberNumber === Sender);
             if (target) {
@@ -100,6 +98,5 @@ export function setupSync() {
             }
             return;
         }
-        next(args);
-    });
+    })
 }
