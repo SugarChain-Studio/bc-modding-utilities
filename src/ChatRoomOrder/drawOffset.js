@@ -40,6 +40,7 @@ export class DrawCharacterModifier {
      * @param {DrawOffsetFunction} modifier 
      */
     static addModifier(modifier) {
+        this.init();
         modifiers.push(modifier);
     }
 }

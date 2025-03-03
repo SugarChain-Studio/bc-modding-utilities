@@ -20,6 +20,7 @@ export class ChatRoomEvents {
     }
 
     static get instance(){
+        this.init();
         return handler;
     }
 }
