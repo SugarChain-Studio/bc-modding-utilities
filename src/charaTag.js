@@ -87,8 +87,6 @@ export class CharacterTag {
     }
 
     static init() {
-        ChatRoomEvents.init();
-
         const instance = this.instance();
         if (instance.hooked) return;
         instance.hooked = true;
@@ -101,7 +99,7 @@ export class CharacterTag {
             sendMyTag(this.instance().localTag);
         });
 
-        ChatRoomEvents.instance.on("Hidden", (data) => processOtherCharaTag(data));
+        ChatRoomEvents.on("Hidden", (data) => processOtherCharaTag(data));
     }
 
     /**

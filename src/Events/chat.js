@@ -2,7 +2,11 @@ import ModManager from "@mod-utils/ModManager"
 import EventEmitter from "eventemitter3"
 
 /**
- * @type {EventEmitter<Record<ServerChatRoomMessageType, [ServerChatRoomMessage]>> | undefined}
+ * @typedef {EventEmitter<Record<ServerChatRoomMessageType, [ServerChatRoomMessage]>>} ChatRoomEventEmitter
+ */
+
+/**
+ * @type {ChatRoomEventEmitter | undefined}
  */
 let handler = undefined;
 
@@ -17,6 +21,22 @@ export class ChatRoomEvents {
             handler.emit(Type, args[0]);
             return next(args);
         });
+    }
+
+    /**
+     * @param {Parameters<ChatRoomEventEmitter["on"]>} args
+     */
+    static on(...args){
+        this.init();
+        handler.on(...args);
+    }
+
+    /**
+     * @param {Parameters<ChatRoomEventEmitter["once"]>} args
+     */
+    static once(...args) {
+        this.init();
+        handler.once(...args);
     }
 
     static get instance(){

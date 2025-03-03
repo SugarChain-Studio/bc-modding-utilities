@@ -1,1 +1,1 @@
-export * from "./passive"
+export * from "./chat"
