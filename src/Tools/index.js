@@ -30,6 +30,8 @@ const ItemGroups = [
     "ItemBoots",
 ];
 
+const CustomDialogPrefix = "Luzi_";
+
 export class Tools {
     /**
      * 发送自定义动作对话
@@ -190,6 +192,34 @@ export class Tools {
                         if (!pv[lang]) pv[lang] = {};
                         pv[lang][dialogKey] = value;
                     }
+                }
+            }
+            return pv;
+        }, /** @type {Translation.Dialog} */ ({}));
+    }
+
+    /**
+     * 生成定制对话生成器
+     * @param {string} prefix 前缀
+     */
+    static makeCustomDialogFactory(prefix) {
+        const fprefix = `${CustomDialogPrefix}${prefix}`;
+        return (detail)=> `${fprefix}${detail}`;
+    }
+
+    /**
+     * 生成定制对话，不含有物品组名
+     * @param {string[]} assetNames 物品名
+     * @param {Translation.Dialog} dialogPrototye
+     * @returns {Translation.Dialog}
+     */
+    static replicateCustomDialog(assetNames, dialogPrototye) {
+        return assetNames.reduce((pv, asset) => {
+            for (const [lang, entry] of Object.entries(dialogPrototye)) {
+                for (const [key, value] of Object.entries(entry)) {
+                    const dialogKey = `${CustomDialogPrefix}${asset}${key}`;
+                    if (!pv[lang]) pv[lang] = {};
+                    pv[lang][dialogKey] = value;
                 }
             }
             return pv;
