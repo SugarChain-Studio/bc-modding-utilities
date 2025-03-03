@@ -8,7 +8,7 @@ import ModManager from "@mod-utils/ModManager";
  */
 
 /**
- * @typedef { (from:DrawOffsetParam)=>DrawOffsetParam } DrawOffsetFunction
+ * @typedef { (C:Character, from:DrawOffsetParam)=>DrawOffsetParam } DrawOffsetFunction
  */
 
 const DrawOffsetInstanceName = "ECHODrawOffsetInstance";
@@ -27,7 +27,7 @@ export class DrawCharacterModifier {
                 const [C, X, Y, Zoom] = args;
                 let result = { X, Y, Zoom };
                 for (const modifier of modifiers) {
-                    result = modifier(result);
+                    result = modifier(C, result);
                 }
 
                 args[1] = result.X;
