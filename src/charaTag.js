@@ -1,4 +1,4 @@
-import { ChatRoomEvents } from "./Handlers";
+import { ChatRoomEvents } from "./Events";
 import ModManager from "./ModManager";
 
 const ECHO_INFO_TAG = "ECHO_INFO";

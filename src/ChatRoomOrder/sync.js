@@ -1,6 +1,6 @@
 import ModManager from "@mod-utils/ModManager";
 import { key } from "./constant";
-import { ChatRoomEvents } from "@mod-utils/Handlers";
+import { ChatRoomEvents } from "@mod-utils/Events";
 
 let doSync = false;
 function syncRun() {
