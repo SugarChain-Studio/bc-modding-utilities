@@ -5,7 +5,7 @@ import { pushAfterLoad, runSetupLoad } from "./loadSchedule";
 import { addCustomDialog, setupCustomDialog } from "./dialog";
 import { pickEntry, setupEntries } from "./entries";
 import { enableCustomAssets, getCustomAssets } from "./customStash";
-import { addLayerNames, setupLayerNameLoad } from "./layerNames";
+import { addLayerNames, addLayerNamesByEntry, setupLayerNameLoad } from "./layerNames";
 
 export default class AssetManager {
     /**
@@ -33,8 +33,8 @@ export default class AssetManager {
                 const description = descriptions && pickEntry(groupName, asset.Name, descriptions);
                 const extendedConfig = extended &&
                     extended[groupName]?.[asset.Name] && {
-                        [groupName]: { [asset.Name]: extended[groupName][asset.Name] },
-                    };
+                    [groupName]: { [asset.Name]: extended[groupName][asset.Name] },
+                };
                 loadAsset(groupName, asset, { extendedConfig, description });
             });
         });
@@ -109,13 +109,23 @@ export default class AssetManager {
     }
 
     /**
-     * 添加自定义的图层名字
+     * 添加自定义的图层名字，图层名字从物品定义中获取
      * @param {CustomGroupName} group 身体组名字
      * @param {CustomAssetDefinition} assetDef 物品定义
      * @param {Translation.CustomRecord<string,string>} entries 图层-名字，按照语言分组
      */
     static addLayerNames(group, assetDef, entries) {
         addLayerNames(group, assetDef, { entries });
+    }
+
+    /**
+     * 添加自定义的图层名字，图层名字从entries中获取
+     * @param {CustomGroupName} group 身体组名字
+     * @param {string} assetName 物品名字
+     * @param {Translation.CustomRecord<string,string>} entries 图层-名字，按照语言分组
+     */
+    static addLayerNamesByEntry(group, assetName, entries) {
+        addLayerNamesByEntry(group, assetName, entries);
     }
 
     /**

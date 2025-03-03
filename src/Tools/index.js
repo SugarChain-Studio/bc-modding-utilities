@@ -163,16 +163,28 @@ export class Tools {
     }
 
     /**
-     * 有的物品基本上是复制的，但是有一些细微的差别，这个函数可以复制对应的物品对话
+     * 从物品组名、物品名、对话原型复制对话
+     * 
+     * @example
+     * ```js
+     * const dialog = Tools.replicateTypedItemDialog(["ItemPelvis"],["幸运贞操带"],{CN:{SelectBase:"选择配置"}})
+     * 
+     * // 上面的代码如同这样
+     * const dialog = {
+     *   CN: {
+     *     "ItemPelvis幸运贞操带SelectBase": "选择配置"
+     *   } 
+     * }
+     * ```
      * @param {CustomGroupName[]} groupNames 物品组名
      * @param {string[]} assetNames 物品名
-     * @param {Translation.Dialog} simpleDesc
+     * @param {Translation.Dialog} dialogPrototye
      * @return {Translation.Dialog}
      */
-    static replicateTypedItemDialog(groupNames, assetNames, simpleDesc) {
+    static replicateTypedItemDialog(groupNames, assetNames, dialogPrototye) {
         return groupNames.reduce((pv, group) => {
             for (const asset of assetNames) {
-                for (const [lang, entry] of Object.entries(simpleDesc)) {
+                for (const [lang, entry] of Object.entries(dialogPrototye)) {
                     for (const [key, value] of Object.entries(entry)) {
                         const dialogKey = `${group}${asset}${key}`;
                         if (!pv[lang]) pv[lang] = {};
