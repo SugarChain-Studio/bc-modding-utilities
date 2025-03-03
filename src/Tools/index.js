@@ -37,7 +37,7 @@ export class Tools {
      * @param {{TargetCharacter?:Character, SourceCharacter?:Character, Asset?:Asset}} arg1
      */
     static sendCustomDialog(Entry, { TargetCharacter, SourceCharacter, Asset }) {
-        if (CurrentScreen !== "ChatRoom") return;
+        if (ServerPlayerIsInChatRoom()) return;
 
         const DialogKey = "EchoModCustomDialog";
         const rEntry = Entry[TranslationLanguage] || Entry["CN"];
