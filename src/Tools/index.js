@@ -201,10 +201,11 @@ export class Tools {
     /**
      * 生成定制对话生成器
      * @param {string} prefix 前缀
+     * @returns { (...details: string[]) => string }
      */
-    static makeCustomDialogFactory(prefix) {
+    static makeCustomDialogGenerator(prefix) {
         const fprefix = `${CustomDialogPrefix}${prefix}`;
-        return (detail)=> `${fprefix}${detail}`;
+        return (...details)=> `${fprefix}${details.join("")}`;
     }
 
     /**
