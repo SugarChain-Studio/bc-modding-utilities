@@ -29,8 +29,9 @@ function globalFunctionMirror(Group, preimageGroup, asset, category) {
  * @param {Translation.Entry} [config.description]
  * @param {CustomGroupName} [config.dynamicName]
  * @param {AssetGroup} [config.preimage]
+ * @param {boolean} [config.noMirror]
  */
-export function loadAsset(groupName, asset, { extendedConfig, description, dynamicName, preimage } = {}) {
+export function loadAsset(groupName, asset, { extendedConfig, description, dynamicName, preimage, noMirror } = {}) {
     pushDefsLoad(groupName, (groupObj) => {
         // 不会因为镜像组而重复调用
         ParsedAsset.add(groupObj.Name, asset);
@@ -39,7 +40,7 @@ export function loadAsset(groupName, asset, { extendedConfig, description, dynam
 
     const srcGroupName = groupName;
 
-    requireGroup(groupName, (groupObj) => {
+    requireGroup(groupName, noMirror, (groupObj) => {
         // 注意，每个镜像身体组都会调用一次这个函数，因此不能使用外面的 groupName
         // 使用 const shadowing 避免这个问题
         const groupName = groupObj.Name;

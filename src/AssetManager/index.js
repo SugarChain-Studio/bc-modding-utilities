@@ -14,10 +14,11 @@ export default class AssetManager {
      * @param { CustomAssetDefinition } asset 物品定义
      * @param { AssetArchetypeConfig } [extended] 可选设置物品扩展属性
      * @param { Translation.Entry } [description] 可选设置物品名字翻译
+     * @param { boolean } [noMirror] 是否不添加镜像
      */
-    static addAsset(group, asset, extended = undefined, description = undefined) {
+    static addAsset(group, asset, extended = undefined, description = undefined, noMirror = false) {
         const extendedConfig = extended && { [group]: { [asset.Name]: extended } };
-        loadAsset(group, asset, { extendedConfig, description });
+        loadAsset(group, asset, { extendedConfig, description, noMirror });
     }
 
     /**
@@ -33,8 +34,8 @@ export default class AssetManager {
                 const description = descriptions && pickEntry(groupName, asset.Name, descriptions);
                 const extendedConfig = extended &&
                     extended[groupName]?.[asset.Name] && {
-                    [groupName]: { [asset.Name]: extended[groupName][asset.Name] },
-                };
+                        [groupName]: { [asset.Name]: extended[groupName][asset.Name] },
+                    };
                 loadAsset(groupName, asset, { extendedConfig, description });
             });
         });

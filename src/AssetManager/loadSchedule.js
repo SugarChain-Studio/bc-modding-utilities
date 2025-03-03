@@ -1,6 +1,6 @@
 import log from "../log";
 import ModManager from "../ModManager";
-import { resolveMirror } from "./mirrorGroup";
+import { resolveMirror, resolveSingle } from "./mirrorGroup";
 
 let isGroupLoaded = false;
 
@@ -78,11 +78,12 @@ const missingGroups = new Set();
 /**
  * 要求一个组加载完成，并在加载完成后执行回调（可能会多次执行，对每个镜像执行一次）
  * @param { CustomGroupName } group
+ * @param { boolean } noMirror
  * @param { (group: AssetGroup) => void } resolve
  */
-export function requireGroup(group, resolve) {
+export function requireGroup(group, noMirror, resolve) {
     const wk = (resolve_) => {
-        const mirrors = resolveMirror(group);
+        const mirrors = noMirror ? [resolveSingle(group)] : resolveMirror(group);
         const unresolved = mirrors.find(({ group }) => !group);
         if (unresolved) {
             if (missingGroups.has(unresolved.name)) {

@@ -40,10 +40,14 @@ export function getCustomMirrorGroups() {
  * @returns { { name: CustomGroupName, group: AssetGroup }[] }
  */
 export function resolveMirror(group) {
-    return ((mMirrorGroups[group] && Array.from(mMirrorGroups[group])) || [group]).map((gname) => ({
-        name: gname,
-        group: AssetGroupGet("Female3DCG", /** @type {AssetGroupName}*/ (gname)),
-    }));
+    return ((mMirrorGroups[group] && Array.from(mMirrorGroups[group])) || [group]).map((gname) => resolveSingle(gname));
+}
+
+export function resolveSingle(group) {
+    return {
+        name: group,
+        group: AssetGroupGet("Female3DCG", /** @type {AssetGroupName}*/ (group)),
+    };
 }
 
 /** @type {Record<string,string>} */
