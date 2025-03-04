@@ -73,7 +73,7 @@ export default class ModManager {
         } else {
             ModManager.mod.hookFunction("LoginResponse", 0, (args, next) => {
                 next(args);
-                wk();
+                if (PlayerLoaded()) wk();
             });
         }
 
