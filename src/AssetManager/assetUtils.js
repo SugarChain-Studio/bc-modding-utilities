@@ -15,8 +15,8 @@ import { pushAfterLoad, pushAssetLoadEvent, pushDefsLoad, requireGroup } from ".
 function globalFunctionMirror(Group, preimageGroup, asset, category) {
     const preimageFunction = `Assets${preimageGroup}${asset.Name}${category}`;
     const newFunction = `Assets${Group}${asset.Name}${category}`;
-    if (window[preimageFunction]) {
-        window[newFunction] = window[preimageFunction];
+    if (globalThis[preimageFunction]) {
+        globalThis[newFunction] = globalThis[preimageFunction];
     }
 }
 

@@ -38,7 +38,7 @@ export function addActivityImageMapping(mappings, category = "Activity") {
 
 export function setupImgMapping() {
     (async () => {
-        await sleepUntil(() => window["ElementButton"] !== undefined);
+        await sleepUntil(() => globalThis["ElementButton"] !== undefined);
 
         ModManager.hookFunction("ElementButton.CreateForActivity", 0, (args, next) => {
             const _args = /** @type {any[]} */ (args);

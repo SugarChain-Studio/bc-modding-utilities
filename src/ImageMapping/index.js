@@ -71,11 +71,10 @@ const global_name = "ECHOImageMapping";
  * @returns { ImageMapping }
  */
 function Mapping() {
-    if (window[global_name]) {
-        return window[global_name];
+    if (!globalThis[global_name]) {
+        globalThis[global_name] = new ImageMapping();
     }
-    window[global_name] = new ImageMapping();
-    return window[global_name];
+    return globalThis[global_name];
 }
 
 export { Mapping };

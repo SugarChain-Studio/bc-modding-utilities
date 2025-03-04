@@ -27,7 +27,7 @@ function addGroupEntry(prefix, src, selfOther, activityName) {
 const AlterNames = {
     ItemVulva: "ItemPenis",
     ItemVulvaPiercings: "ItemGlans",
-}
+};
 
 /**
  * @param { "Label-" | "" } prefix
@@ -125,5 +125,3 @@ export function setupEntry() {
             );
         });
 }
-
-window["CustomEntry"] = () => entries;

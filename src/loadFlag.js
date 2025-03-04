@@ -5,11 +5,11 @@ const global_name = "ECHOLoadFlag";
  * @param {()=>void} callback
  */
 export function once(tag, callback) {
-    if (!window[global_name]) {
-        window[global_name] = {};
+    if (!globalThis[global_name]) {
+        globalThis[global_name] = {};
     }
-    if (!window[global_name][tag]) {
-        window[global_name][tag] = true;
+    if (!globalThis[global_name][tag]) {
+        globalThis[global_name][tag] = true;
         callback();
     }
 }

@@ -23,8 +23,8 @@ export class ChatRoomOrder {
      * 初始化配对绘制功能
      */
     static setup() {
-        if (window[setupKey]) return;
-        window[setupKey] = ChatRoomOrder;
+        if (globalThis[setupKey]) return;
+        globalThis[setupKey] = ChatRoomOrder;
         setupXCharacterDrawlist();
         setupSync();
     }

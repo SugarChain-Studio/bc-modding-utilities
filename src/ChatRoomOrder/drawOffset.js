@@ -14,12 +14,12 @@ import ModManager from "@mod-utils/ModManager";
 const DrawOffsetInstanceName = "ECHODrawOffsetInstance";
 
 /** @type {DrawOffsetFunction[]} */
-const modifiers = []
+const modifiers = [];
 
 export class DrawCharacterModifier {
     static init() {
-        if (window[DrawOffsetInstanceName]) return;
-        window[DrawOffsetInstanceName] = DrawCharacterModifier;
+        if (globalThis[DrawOffsetInstanceName]) return;
+        globalThis[DrawOffsetInstanceName] = DrawCharacterModifier;
 
         ModManager.progressiveHook("DrawCharacter", 1)
             .inside("ChatRoomCharacterViewLoopCharacters")
@@ -38,7 +38,7 @@ export class DrawCharacterModifier {
     }
 
     /**
-     * @param {DrawOffsetFunction} modifier 
+     * @param {DrawOffsetFunction} modifier
      */
     static addModifier(modifier) {
         this.init();

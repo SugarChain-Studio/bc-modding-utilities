@@ -48,7 +48,7 @@ export function setupImgMapping() {
     );
 
     (async () => {
-        await sleepUntil(() => window["ElementButton"] !== undefined);
+        await sleepUntil(() => globalThis["ElementButton"] !== undefined);
 
         ModManager.hookFunction("ElementButton.CreateForAsset", 0, (args, next) => {
             const _args = /** @type {any[]} */ (args);

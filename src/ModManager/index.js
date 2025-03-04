@@ -27,7 +27,7 @@ const waitPlayerHookList = new WorkList();
 const patchList = new WorkList();
 
 function PlayerLoaded() {
-    return window["Player"] != undefined && typeof window["Player"]["MemberNumber"] === "number";
+    return globalThis["Player"] != undefined && typeof globalThis["Player"]["MemberNumber"] === "number";
 }
 
 /**
@@ -112,7 +112,7 @@ export default class ModManager {
      * @param {ModManagerInterface.FunctionArguments<TFunctionName>} args
      */
     static invokeOriginal(functionName, ...args) {
-        if (!ModManager.mod) return window[/** @type {string} */ (functionName)]?.(...args);
+        if (!ModManager.mod) return globalThis[/** @type {string} */ (functionName)]?.(...args);
         else return ModManager.mod.callOriginal(functionName, args);
     }
 
@@ -153,7 +153,7 @@ export default class ModManager {
     }
 
     /**
-     * 注册全局函数（可以通过window访问）
+     * 注册全局函数（可以通过 globalThis 访问）
      * @param {string} funcName
      * @param {Function} func
      */
@@ -161,9 +161,9 @@ export default class ModManager {
         if (typeof func != "function") {
             log.warn("globalFunction: param is not a function");
         }
-        if (window[funcName] == undefined) {
-            window[funcName] = func;
-        } else if (window[funcName] != func) {
+        if (globalThis[funcName] == undefined) {
+            globalThis[funcName] = func;
+        } else if (globalThis[funcName] != func) {
             log.warn(`globalFunction: ${funcName} is already defined`);
         }
     }
@@ -179,10 +179,10 @@ export default class ModManager {
     static randomGlobalFunction(funcPrefix, func) {
         const genName = (prefix) => prefix + Math.random().toString(16).substring(2);
         let funcName = genName(funcPrefix);
-        while (window[funcName] != undefined) {
+        while (globalThis[funcName] != undefined) {
             funcName = genName(funcPrefix);
         }
-        window[funcName] = /** @type {any} */ (func);
+        globalThis[funcName] = /** @type {any} */ (func);
         return funcName;
     }
 }
