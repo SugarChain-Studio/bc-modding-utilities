@@ -7,7 +7,7 @@ export const ModInfo = {
 };
 
 /** @type { AssetOverrideContainer } */
-export const assetOverrides = __mod_asset_overrides__;
+export const assetOverrides = JSON.parse(LZString.decompressFromBase64(__mod_asset_overrides__));
 
 export const baseURL = __mod_base_url__;
 
