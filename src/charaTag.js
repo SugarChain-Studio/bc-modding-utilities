@@ -61,8 +61,6 @@ export class CharacterTagInstance {
      * @param {CharacterTagItem} tag
      */
     tag(name, tag) {
-        console.log("tagging", name, tag);
-
         this.localTag[name] = tag;
 
         const tagPlayer = () => {
