@@ -1,3 +1,5 @@
+import { ModInfo } from "@mod-utils/rollupHelper";
+import { CharacterTag } from "../charaTag";
 import ModManager from "../ModManager";
 
 /** @type {Partial<Record<CustomGroupName, AssetGroup>>} */
@@ -5,6 +7,13 @@ const customGroups = {};
 
 /** @type {Partial<Record<CustomGroupName, Record<string, Asset>>>} */
 const customAssets = {};
+
+/**
+ * @param {CustomGroupName} group
+ * @param {string} name
+ * @returns {Asset | undefined}
+ */
+const accessCustomAsset = (group, name) => customAssets[group]?.[name];
 
 /**
  *
@@ -53,15 +62,49 @@ export function getCustomAssets() {
  */
 export function isInListCustomAsset(group, name) {
     /** @type {Asset | undefined} */
-    const asset = customAssets[group]?.[name];
+    const asset = accessCustomAsset(group, name);
     return asset && !asset.NotVisibleOnScreen?.includes("LuziScreen");
 }
+
+/**
+ * @typedef { AppearanceUpdateParameters & { fromModUser?: boolean } } AUParametersExt
+ */
 
 export function enableCustomAssets() {
     let doInventoryAdd = false;
     ModManager.progressiveHook("DialogInventoryBuild").inject((args, next) => {
         if (args[2]) return;
         doInventoryAdd = true;
+    });
+
+    // prevent custom assets from being removed by non-mod users
+    ModManager.hookFunction("ValidationResolveRemoveDiff", 1, (args, next) => {
+        const [previousItem, params] = args;
+        if (
+            !(/**@type {AUParametersExt} */ (params).fromModUser) &&
+            accessCustomAsset(previousItem.Asset.Group.Name, previousItem.Asset.Name)
+        ) {
+            return { item: previousItem, valid: false };
+        }
+        return next(args);
+    });
+
+    // prevent custom assets from being swapped by non-mod users
+    ModManager.hookFunction("ValidationResolveSwapDiff", 1, (args, next) => {
+        const [previousItem, _, params] = args;
+        if (
+            !(/**@type {AUParametersExt} */ (params).fromModUser) &&
+            accessCustomAsset(previousItem.Asset.Group.Name, previousItem.Asset.Name)
+        ) {
+            return { item: previousItem, valid: false };
+        }
+        return next(args);
+    });
+
+    ModManager.hookFunction("ValidationResolveAppearanceDiff", 1, (args, next) => {
+        const from = ChatRoomCharacter.find((c) => c.MemberNumber === args[3].sourceMemberNumber);
+        /** @type {AUParametersExt}*/ (args[3]).fromModUser = from && !!CharacterTag.get(from, ModInfo.name);
+        return next(args);
     });
 
     ModManager.progressiveHook("DialogInventoryAdd")
@@ -85,7 +128,7 @@ export function enableCustomAssets() {
     /** @type {ModManagerInterface.HookFunction<"InventoryAvailable">} */
     const overrideAvailable = (args, next) => {
         const [C, Name, Group] = args;
-        if (customAssets[Group]?.[Name]) return true;
+        if (!!accessCustomAsset(Group, Name)) return true;
         return next(args);
     };
 
@@ -120,17 +163,13 @@ export function enableCustomAssets() {
  * @param {Item | null} item
  */
 export function checkItemCustomed(item) {
-    if (
-        item &&
-        item.Asset &&
-        item.Asset.Group.Name in customAssets &&
-        item.Asset.Name in customAssets[item.Asset.Group.Name]
-    )
+    if (item && item.Asset && !!accessCustomAsset(item.Asset.Group.Name, item.Asset.Name)) {
         return {
             then: (cb) => cb(item),
         };
-    else
+    } else {
         return {
             then: (cb) => {},
         };
+    }
 }
