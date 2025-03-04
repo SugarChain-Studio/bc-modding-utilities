@@ -1,9 +1,10 @@
 import { ChatRoomEvents } from "./Events";
+import { Globals } from "./globals";
 import ModManager from "./ModManager";
 
-const ECHO_INFO_TAG = "ECHO_INFO";
+const ECHO_INFO_TAG = "ECHO_INFO2";
 
-const GLOBAL_INSTANCE_TAG = "ECHO_CHARA_TAG";
+const global_name = "CharacterTag";
 
 /**
  * @typedef {Object}  CharacterTagItem
@@ -41,9 +42,18 @@ export class CharacterTagInstance {
 
     constructor() {}
 
+    /**
+     * @param {CharacterTagInstance} old
+     * @returns {boolean} 是否发生了迁移
+     */
     migrate(old) {
-        this.localTag = old["localTag"] || {};
-        this.hooked = !!old["hooked"];
+        if (this.version <= old.version) return false;
+
+        this.localTag = old.localTag;
+        this.hooked = old.hooked;
+
+        console.log("migrated");
+        return true;
     }
 
     /**
@@ -51,6 +61,8 @@ export class CharacterTagInstance {
      * @param {CharacterTagItem} tag
      */
     tag(name, tag) {
+        console.log("tagging", name, tag);
+
         this.localTag[name] = tag;
 
         const tagPlayer = () => {
@@ -104,16 +116,16 @@ export class CharacterTag {
      * @returns {CharacterTagInstance}
      */
     static get instance() {
-        const oldGlobal = globalThis[GLOBAL_INSTANCE_TAG];
-        const newGlobal = new CharacterTagInstance();
+        return Globals.getMayOverride(global_name, (old) => {
+            const newGlobal = new CharacterTagInstance();
+            if (!old) return newGlobal;
 
-        if (!oldGlobal || !(oldGlobal instanceof CharacterTagInstance)) globalThis[GLOBAL_INSTANCE_TAG] = newGlobal;
-        else if (!oldGlobal.version || oldGlobal.version < newGlobal.version) {
-            newGlobal.migrate(oldGlobal);
-            globalThis[GLOBAL_INSTANCE_TAG] = newGlobal;
-        }
+            if (newGlobal.migrate(old)) {
+                return newGlobal;
+            }
 
-        return globalThis[GLOBAL_INSTANCE_TAG];
+            return old;
+        });
     }
 
     /**

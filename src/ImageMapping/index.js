@@ -1,3 +1,5 @@
+import { Globals } from "@mod-utils/globals";
+
 class ImageMapping {
     constructor() {
         this.basic = /** @type {Record<string,string>} */ ({}); // basicImgMapping
@@ -65,16 +67,13 @@ class ImageMapping {
     }
 }
 
-const global_name = "ECHOImageMapping";
+const global_name = "ImageMapping";
 
 /**
  * @returns { ImageMapping }
  */
 function Mapping() {
-    if (!globalThis[global_name]) {
-        globalThis[global_name] = new ImageMapping();
-    }
-    return globalThis[global_name];
+    return Globals.get(global_name, () => new ImageMapping());
 }
 
 export { Mapping };

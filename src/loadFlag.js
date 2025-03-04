@@ -1,15 +1,17 @@
-const global_name = "ECHOLoadFlag";
+import { Globals } from "./globals";
+
+const global_name = "LoadFlag";
+
+/** @type {import("./globals").INamespace<boolean>} */
+const storage = Globals.createNamespace(global_name);
 
 /**
  * @param {string} tag
  * @param {()=>void} callback
  */
 export function once(tag, callback) {
-    if (!globalThis[global_name]) {
-        globalThis[global_name] = {};
-    }
-    if (!globalThis[global_name][tag]) {
-        globalThis[global_name][tag] = true;
+    if (!storage.get(tag, () => false)) {
+        storage.set(tag, true);
         callback();
     }
 }
