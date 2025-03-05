@@ -196,11 +196,13 @@ async function readAssetsMapping(startDir, assetDirs) {
                 .forEach((line) => {
                     if (line.length < 4) return;
                     const status = line.substring(0, 2);
-                    if (status !== " M" && status !== "??") return;
+                    if (status !== " M" && status !== "M " && status !== "R " && status !== "??") return;
+
+                    const line_path_part = status === "R " ? line.substring(3).split(" -> ")[1] : line.substring(3);
 
                     const fpath = path.relative(
                         startDir,
-                        ((src) => (src.startsWith('"') ? src.substring(1, src.length - 1) : src))(line.substring(3))
+                        ((src) => (src.startsWith('"') ? src.substring(1, src.length - 1) : src))(line_path_part)
                     );
 
                     if (!fpath.endsWith(".png")) return;
