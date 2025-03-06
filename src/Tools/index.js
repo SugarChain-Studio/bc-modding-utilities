@@ -1,3 +1,5 @@
+import { DialogTools } from "./dialogs";
+
 /** @type {AssetGroupItemName[]} */
 const ItemGroups = [
     "ItemFeet",
@@ -166,66 +168,30 @@ export class Tools {
         return `Assets/${A.Group.Family}/${GroupName}/${poseSegment}${urlParts.join("_")}.png`;
     }
 
-    /**
-     * 从物品组名、物品名、对话原型复制对话
-     *
-     * @example
-     * ```js
-     * const dialog = Tools.replicateTypedItemDialog(["ItemPelvis"],["幸运贞操带"],{CN:{SelectBase:"选择配置"}})
-     *
-     * // 上面的代码如同这样
-     * const dialog = {
-     *   CN: {
-     *     "ItemPelvis幸运贞操带SelectBase": "选择配置"
-     *   }
-     * }
-     * ```
-     * @param {CustomGroupName[]} groupNames 物品组名
-     * @param {string[]} assetNames 物品名
-     * @param {Translation.Dialog} dialogPrototye
-     * @return {Translation.Dialog}
-     */
-    static replicateTypedItemDialog(groupNames, assetNames, dialogPrototye) {
-        return groupNames.reduce((pv, group) => {
-            for (const asset of assetNames) {
-                for (const [lang, entry] of Object.entries(dialogPrototye)) {
-                    for (const [key, value] of Object.entries(entry)) {
-                        const dialogKey = `${group}${asset}${key}`;
-                        if (!pv[lang]) pv[lang] = {};
-                        pv[lang][dialogKey] = value;
-                    }
-                }
-            }
-            return pv;
-        }, /** @type {Translation.Dialog} */ ({}));
-    }
+    static replicateTypedItemDialog = DialogTools.replicateTypedItemDialog;
+
+    static makeCustomDialogGenerator = DialogTools.makeCustomDialogGenerator;
+
+    static replicateCustomDialog = DialogTools.replicateCustomDialog;
+
+    static dialogGenerator = DialogTools.dialogGenerator;
 
     /**
-     * 生成定制对话生成器
-     * @param {string} prefix 前缀
-     * @returns { (...details: any[]) => string }
+     *
+     * @param {number} itemCount
+     * @returns {ExtendedItemConfigDrawData<Partial<ElementMetaData.Modular>>}
      */
-    static makeCustomDialogGenerator(prefix) {
-        const fprefix = `${CustomDialogPrefix}${prefix}`;
-        return (...details) => `${fprefix}${details.map((v) => v.toString()).join("")}`;
-    }
-
-    /**
-     * 生成定制对话，不含有物品组名
-     * @param {string[]} assetNames 物品名
-     * @param {Translation.Dialog} dialogPrototye
-     * @returns {Translation.Dialog}
-     */
-    static replicateCustomDialog(assetNames, dialogPrototye) {
-        return assetNames.reduce((pv, asset) => {
-            for (const [lang, entry] of Object.entries(dialogPrototye)) {
-                for (const [key, value] of Object.entries(entry)) {
-                    const dialogKey = `${CustomDialogPrefix}${asset}${key}`;
-                    if (!pv[lang]) pv[lang] = {};
-                    pv[lang][dialogKey] = value;
-                }
-            }
-            return pv;
-        }, /** @type {Translation.Dialog} */ ({}));
+    static makeButtonGroup(itemCount) {
+        const perPage = Math.min(itemCount, 18);
+        return {
+            elementData: Array.from({ length: itemCount }).map((_, idx) => {
+                const idxOnPage = idx % perPage;
+                return {
+                    position: [1135 + 250 * (idxOnPage % 3), 450 + 75 * Math.floor(idxOnPage / 3)],
+                    drawImage: false,
+                };
+            }),
+            itemsPerPage: perPage,
+        };
     }
 }

@@ -30,7 +30,7 @@ type CustomGroupBodyName =
 /** 扩展身体组名称 */
 type CustomGroupName = AssetGroupItemName | CustomGroupBodyName | AssetGroupScriptName;
 
-namespace _ {
+declare namespace _ {
     /** 将 T 类型中的 From 类型 *递归地* 替换为 To 类型。主要用于把 AssetGroupName 替换为 CustomGroupName。*/
     type ExtendType<T, From, To> = { [K in keyof T]: T[K] extends From ? To : ExtendType<T[K], From, To> };
 
@@ -91,7 +91,7 @@ type CustomGroupedAssetDefinitions = _.GroupedAssetType;
 /** 自定义图片映射 */
 type CustomImageMapping = Record<string, string>;
 
-namespace Translation {
+declare namespace Translation {
     type CustomRecord<T extends string, U> = _.PRecord<ServerChatRoomLanguage, _.PRecord<T, U>>;
 
     /**
@@ -141,7 +141,7 @@ type AssetOverrideContainer = Record<string, AssetOverrideLeaf>;
 
 type CopyGroupInfo = { name: CustomGroupName; mirror: AssetGroupName; description?: TranslationEntry };
 
-namespace ModManagerInterface {
+declare namespace ModManagerInterface {
     namespace _ {
         type PatchHook<T extends (...args: any[]) => any> = import("bondage-club-mod-sdk").PatchHook<T>;
         type GetDotedPathType<K extends string> = import("bondage-club-mod-sdk").GetDotedPathType<typeof globalThis, K>;
@@ -162,7 +162,7 @@ namespace ModManagerInterface {
     };
 }
 
-namespace ProgressiveHookInterface {
+declare namespace ProgressiveHookInterface {
     type InjectWork<T extends string> = { value: "inject"; work: ModManager.InjectFunction<T> };
     type NextWork<T extends string> = { value: "next" };
     type OverrideWork<T extends string> = { value: "override"; work: ModManager.HookFunction<T> };
@@ -202,11 +202,11 @@ type CustomActivity = Omit<Activity, "Name" | "Prerequisite" | "ActivityID"> & {
     Prerequisite: ActivityManagerInterface.ExCustomActivityPrerequisite[];
 };
 
-namespace Translation {
+declare namespace Translation {
     type ActivityEntry = _.PRecord<ServerChatRoomLanguage, _.PRecord<AssetGroupItemName, string>>;
 }
 
-namespace ActivityManagerInterface {
+declare namespace ActivityManagerInterface {
     type ActivityDialogKey = `Chat${"Other" | "Self"}-${AssetGroupItemName}-${CustomActivity["Name"]}`;
 
     type ActivityRunnableTriggerMode = "OnSelf" | "OtherOnSelf" | "OnOther";
