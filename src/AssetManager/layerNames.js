@@ -33,7 +33,7 @@ export function pushLayerName(key, desc, fallback, noOverride = false) {
 /**
  * 创建一个图层名字解析器
  * 将 语言-图层-名字 转换为 图层-语言-名字
- * @param {Translation.CustomRecord<string,string> | undefined} entries 
+ * @param {Translation.CustomRecord<string,string> | undefined} entries
  * @returns {(layer: string) => Partial<Record<ServerChatRoomLanguage, string>>}
  */
 const createLayerNameResolver = (entries) => (layer) =>
@@ -54,7 +54,11 @@ const createLayerNameResolver = (entries) => (layer) =>
  */
 export function addLayerNamesByEntry(group, assetName, entries, noOverride = true) {
     const resolve = createLayerNameResolver(entries);
-    const layerNames = new Set(Object.entries(entries).map(([key, value]) => Object.keys(value)).flat());
+    const layerNames = new Set(
+        Object.entries(entries)
+            .map(([key, value]) => Object.keys(value))
+            .flat()
+    );
     layerNames.forEach((layer) => {
         pushLayerName(`${group}${assetName}${layer}`, resolve(layer), layer, !!noOverride);
     });
@@ -71,7 +75,14 @@ export function addLayerNamesByEntry(group, assetName, entries, noOverride = tru
 export function addLayerNames(group, assetDef, { entries, noOverride } = {}) {
     const resolve = createLayerNameResolver(entries);
     assetDef.Layer?.forEach(({ Name }) => {
-        pushLayerName(`${group}${assetDef.Name}${Name}`, resolve(Name), Name, !!noOverride);
+        if (!Name)
+            pushLayerName(
+                `${group}${assetDef.Name}`,
+                { CN: assetDef.Name.replace(/_.*?Luzi$/, "") },
+                assetDef.Name,
+                !!noOverride
+            );
+        else pushLayerName(`${group}${assetDef.Name}${Name}`, resolve(Name), Name, !!noOverride);
     });
 }
 
