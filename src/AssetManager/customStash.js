@@ -1,5 +1,3 @@
-import { ModInfo } from "../rollupHelper";
-import { CharacterTag } from "../charaTag";
 import ModManager from "../ModManager";
 
 /** @type {Partial<Record<CustomGroupName, AssetGroup>>} */
