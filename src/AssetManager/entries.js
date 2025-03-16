@@ -1,4 +1,3 @@
-import log from "@mod-utils/log";
 import ModManager from "../ModManager";
 import { checkItemCustomed, getCustomAssets, getCustomGroups } from "./customStash";
 import { getCustomMirrorGroups, resolvePreimage } from "./mirrorGroup";

@@ -1,6 +1,6 @@
-import log from "@mod-utils/log";
+import log from "../log";
 import { ActivityDeconstruct } from "./utility";
-import { ModInfo } from "@mod-utils/rollupHelper";
+import { ModInfo } from "../rollupHelper";
 
 /** @type {_.PRecord<string, ActivityManagerInterface.IActivityRunnable>} */
 const actHandlers = {};

@@ -1,5 +1,5 @@
-import log from "@mod-utils/log";
-import { sleepUntil } from "@mod-utils/sleep";
+import log from "../log";
+import { sleepUntil } from "../sleep";
 
 const registerQueue = [];
 let queueLoaded = false;

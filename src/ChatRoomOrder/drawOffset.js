@@ -1,4 +1,4 @@
-import ModManager from "@mod-utils/ModManager";
+import ModManager from "../ModManager";
 
 /**
  * @typedef { Object } DrawOffsetParam

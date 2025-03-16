@@ -1,4 +1,4 @@
-import { Globals } from "@mod-utils/globals";
+import { Globals } from "../globals";
 
 class ImageMapping {
     constructor() {

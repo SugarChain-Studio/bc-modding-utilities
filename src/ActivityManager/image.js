@@ -1,6 +1,6 @@
-import ModManager from "@mod-utils/ModManager";
-import { Path } from "@mod-utils/path";
-import { sleepUntil } from "@mod-utils/sleep";
+import ModManager from "../ModManager";
+import { Path } from "../path";
+import { sleepUntil } from "../sleep";
 import { Mapping } from "../ImageMapping";
 
 const mapping = Mapping();

@@ -1,6 +1,6 @@
-import ModManager from "@mod-utils/ModManager";
+import ModManager from "../ModManager";
 import { key } from "./constant";
-import { ChatRoomEvents } from "@mod-utils/Events";
+import { ChatRoomEvents } from "../Events";
 
 let doSync = false;
 function syncRun() {
@@ -81,12 +81,12 @@ export function setupSync() {
         next(args);
     });
 
-    ChatRoomEvents.on("Action", ({Content})=>{
-        if(Content === "ServerEnter") setSync();
-    })
-    
-    ChatRoomEvents.on("Hidden", ({ Type, Content, Sender, Dictionary })=>{
-        if(Content === key) {
+    ChatRoomEvents.on("Action", ({ Content }) => {
+        if (Content === "ServerEnter") setSync();
+    });
+
+    ChatRoomEvents.on("Hidden", ({ Type, Content, Sender, Dictionary }) => {
+        if (Content === key) {
             /** @type {XCharacter}*/
             const target = ChatRoomCharacter.find((c) => c.MemberNumber === Sender);
             if (target) {
@@ -96,5 +96,5 @@ export function setupSync() {
             }
             return;
         }
-    })
+    });
 }

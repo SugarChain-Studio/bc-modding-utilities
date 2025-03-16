@@ -1,6 +1,6 @@
-import { RecordEntries, RecordMap } from "@mod-utils/fp";
-import ModManager from "@mod-utils/ModManager";
-import { Option } from "@mod-utils/fp";
+import { RecordEntries, RecordMap } from "../fp";
+import ModManager from "../ModManager";
+import { Option } from "../fp";
 
 /** @type { _.PRecord<ServerChatRoomLanguage, Record<ActivityManagerInterface.ActivityDialogKey, string>> } */
 const entries = {};

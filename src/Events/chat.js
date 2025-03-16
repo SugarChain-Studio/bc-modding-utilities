@@ -1,5 +1,5 @@
-import ModManager from "@mod-utils/ModManager"
-import EventEmitter from "eventemitter3"
+import ModManager from "../ModManager";
+import EventEmitter from "eventemitter3";
 
 /**
  * @typedef {EventEmitter<Record<ServerChatRoomMessageType, [ServerChatRoomMessage]>>} ChatRoomEventEmitter
@@ -12,12 +12,12 @@ let handler = undefined;
 
 export class ChatRoomEvents {
     static init() {
-        if(handler !== undefined) return;
+        if (handler !== undefined) return;
 
         handler = new EventEmitter();
 
         ModManager.hookFunction("ChatRoomMessage", 10, (args, next) => {
-            const { Type } = args[0]
+            const { Type } = args[0];
             handler.emit(Type, args[0]);
             return next(args);
         });
@@ -26,7 +26,7 @@ export class ChatRoomEvents {
     /**
      * @param {Parameters<ChatRoomEventEmitter["on"]>} args
      */
-    static on(...args){
+    static on(...args) {
         this.init();
         handler.on(...args);
     }
@@ -39,9 +39,8 @@ export class ChatRoomEvents {
         handler.once(...args);
     }
 
-    static get instance(){
+    static get instance() {
         this.init();
         return handler;
     }
 }
-

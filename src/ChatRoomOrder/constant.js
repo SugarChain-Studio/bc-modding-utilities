@@ -1,4 +1,4 @@
-import { ModInfo } from "@mod-utils/rollupHelper";
+import { ModInfo } from "../rollupHelper";
 
 const key = `[${ModInfo.name}]XCharacterDrawState`;
 
