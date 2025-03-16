@@ -253,7 +253,7 @@ declare namespace ActivityManagerInterface {
     }
 }
 
-declare function ServerSend<T = keyof ClientToServerEvents>(
+declare function ServerSend<T extends keyof ClientToServerEvents>(
     Message: T,
     ...args: Parameters<ClientToServerEvents[T]>
 ): void;
