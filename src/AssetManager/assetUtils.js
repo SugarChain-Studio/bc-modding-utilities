@@ -1,4 +1,3 @@
-import log from "../log";
 import { AssetConfig, ParsedAsset, resolveStringAsset } from "./assetConfigs";
 import { CustomAssetAdd, getCustomAssets } from "./customStash";
 import { Entries, resolveEntry, solidfyEntry } from "./entries";
@@ -50,7 +49,7 @@ export function loadAsset(groupName, asset, { extendedConfig, description, dynam
         const solidDesc = solidfyEntry(description, assetDefRes.Name.replace(/_.*?Luzi$/, ""));
 
         if (getCustomAssets()[groupName]?.[assetDef.Name] !== undefined) {
-            log.warn(`Asset {${groupName}:${assetDef.Name}} already existed!`);
+            console.warn(`[AssetManager] Asset {${groupName}:${assetDef.Name}} already existed!`);
         }
 
         // 先在这里设置一遍显示名称
@@ -101,7 +100,7 @@ export function modifyAsset(groupName, assetName, work) {
         if (!asset) {
             if (!missingAsset[groupName]) missingAsset[groupName] = new Set();
             if (missingAsset[groupName].has(assetName)) {
-                log.error(`Asset ${groupName}:${assetName} not found`);
+                console.error(`[AssetManager] Asset ${groupName}:${assetName} not found`);
                 return;
             } else {
                 missingAsset[groupName].add(assetName);

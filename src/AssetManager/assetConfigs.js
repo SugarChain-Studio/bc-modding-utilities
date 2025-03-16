@@ -1,4 +1,3 @@
-import log from "../log";
 import { resolveMirror } from "./mirrorGroup";
 
 export class AssetConfig {

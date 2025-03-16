@@ -87,7 +87,7 @@ export function requireGroup(group, noMirror, resolve) {
         const unresolved = mirrors.find(({ group }) => !group);
         if (unresolved) {
             if (missingGroups.has(unresolved.name)) {
-                log.error(`Required group "${unresolved.name}" not found`);
+                console.error(`[AssetManager] Required group "${unresolved.name}" not found`);
                 return;
             }
             missingGroups.add(unresolved.name);
@@ -122,7 +122,7 @@ export function runSetupLoad() {
     const userLanguage = navigator.language.startsWith("zh") ? "zh" : "en";
 
     const mLoadGroup = () => {
-        log.info(loadMessage[userLanguage].start);
+        console.info(`[AssetManager] ${loadMessage[userLanguage].start}`);
 
         const time = Date.now();
         // 先执行所有的直接加载事件（一般是自定义的组加载）
@@ -139,7 +139,7 @@ export function runSetupLoad() {
         while (afterLoadWorks.length > 0) afterLoadWorks.shift()();
         const end = Date.now();
 
-        log.info(loadMessage[userLanguage].end + (end - time) + "ms");
+        console.info(`[AssetManager] ${loadMessage[userLanguage].end + (end - time)}ms`);
     };
 
     if (AssetGroup.length > 50) {

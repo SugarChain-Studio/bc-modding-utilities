@@ -1,4 +1,3 @@
-import log from "../log";
 import { ActivityDeconstruct } from "./utility";
 import { ModInfo } from "../rollupHelper";
 
@@ -46,7 +45,7 @@ export function makeChatRoomMsgHandler(handlerKey) {
  */
 export function pushHandler(name, handler) {
     if (actHandlers[name]) {
-        log.warn(`Handler for ${name} already exists, overwriting`);
+        console.warn(`[ActitivyManager] Handler for ${name} already exists, overwriting`);
     }
     actHandlers[name] = handler;
 }

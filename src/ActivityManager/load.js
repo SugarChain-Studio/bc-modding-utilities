@@ -1,4 +1,3 @@
-import log from "../log";
 import { sleepUntil } from "../sleep";
 
 const registerQueue = [];
@@ -33,10 +32,10 @@ export function setupLoad(criteria) {
         const userLanguage = navigator.language.startsWith("zh") ? "zh" : "en";
 
         const start = Date.now();
-        log.info(loadMessage[userLanguage].start);
+        console.info(`[ActivityManager] ${loadMessage[userLanguage].start}`);
         queueLoaded = true;
         while (registerQueue.length > 0) registerQueue.shift()();
         const end = Date.now();
-        log.info(loadMessage[userLanguage].end + (end - start) + "ms");
+        console.info(`[ActivityManager] ${loadMessage[userLanguage].end + (end - start)}ms`);
     })();
 }

@@ -1,4 +1,3 @@
-import log from "../log";
 import { Entries, resolveEntry, solidfyEntry } from "./entries";
 import { pushGroupLoad } from "./loadSchedule";
 import { registerMirror } from "./mirrorGroup";
@@ -50,7 +49,7 @@ export function mirrorGroup(newGroup, copyFrom, description = undefined) {
         if (!fromDef || !fromGrp) {
             // 两次找不到组，说明组不存在，或者循环依赖，直接抛弃
             if (missingGroup.has(fromDef.Group)) {
-                log.error(`Group ${fromDef.Group} not found`);
+                console.error(`[AssetManager] Group ${fromDef.Group} not found`);
                 return;
             }
 

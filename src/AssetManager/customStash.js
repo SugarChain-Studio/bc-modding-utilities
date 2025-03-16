@@ -13,7 +13,7 @@ const customAssets = {};
  * @param {string} name
  * @returns {Asset | undefined}
  */
-const accessCustomAsset = (group, name) => customAssets[group]?.[name];
+export const accessCustomAsset = (group, name) => customAssets[group]?.[name];
 
 /**
  *
@@ -66,45 +66,11 @@ export function isInListCustomAsset(group, name) {
     return asset && !asset.NotVisibleOnScreen?.includes("LuziScreen");
 }
 
-/**
- * @typedef { AppearanceUpdateParameters & { fromModUser?: boolean } } AUParametersExt
- */
-
 export function enableCustomAssets() {
     let doInventoryAdd = false;
     ModManager.progressiveHook("DialogInventoryBuild").inject((args, next) => {
         if (args[2]) return;
         doInventoryAdd = true;
-    });
-
-    // prevent custom assets from being removed by non-mod users
-    ModManager.hookFunction("ValidationResolveRemoveDiff", 1, (args, next) => {
-        const [previousItem, params] = args;
-        if (
-            !(/**@type {AUParametersExt} */ (params).fromModUser) &&
-            accessCustomAsset(previousItem.Asset.Group.Name, previousItem.Asset.Name)
-        ) {
-            return { item: previousItem, valid: false };
-        }
-        return next(args);
-    });
-
-    // prevent custom assets from being swapped by non-mod users
-    ModManager.hookFunction("ValidationResolveSwapDiff", 1, (args, next) => {
-        const [previousItem, _, params] = args;
-        if (
-            !(/**@type {AUParametersExt} */ (params).fromModUser) &&
-            accessCustomAsset(previousItem.Asset.Group.Name, previousItem.Asset.Name)
-        ) {
-            return { item: previousItem, valid: false };
-        }
-        return next(args);
-    });
-
-    ModManager.hookFunction("ValidationResolveAppearanceDiff", 1, (args, next) => {
-        const from = ChatRoomCharacter.find((c) => c.MemberNumber === args[3].sourceMemberNumber);
-        /** @type {AUParametersExt}*/ (args[3]).fromModUser = from && !!CharacterTag.get(from, ModInfo.name);
-        return next(args);
     });
 
     ModManager.progressiveHook("DialogInventoryAdd")

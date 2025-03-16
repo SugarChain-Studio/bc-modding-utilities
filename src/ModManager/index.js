@@ -81,6 +81,27 @@ export default class ModManager {
     }
 
     /**
+     * 注册mod，使用已经初始化的mod
+     * @param { ModManagerInterface.ModSDKModAPI } mod
+     */
+    static initWithMod(mod) {
+        mMod = mod;
+        patchList.run();
+        hookList.run();
+
+        const wk = () => waitPlayerHookList.run();
+
+        if (PlayerLoaded()) {
+            wk();
+        } else {
+            ModManager.mod.hookFunction("LoginResponse", 0, (args, next) => {
+                next(args);
+                if (PlayerLoaded()) wk();
+            });
+        }
+    }
+
+    /**
      * 添加一个初始化后回调，在mod初始化时执行。如果mod已经初始化，则立即执行。
      * @param {FuncWork} work
      */
@@ -159,12 +180,12 @@ export default class ModManager {
      */
     static globalFunction(funcName, func) {
         if (typeof func != "function") {
-            log.warn("globalFunction: param is not a function");
+            console.warn("[ModManager] globalFunction: param is not a function");
         }
         if (globalThis[funcName] == undefined) {
             globalThis[funcName] = func;
         } else if (globalThis[funcName] != func) {
-            log.warn(`globalFunction: ${funcName} is already defined`);
+            console.warn(`[ModManager] globalFunction: ${funcName} is already defined`);
         }
     }
 
