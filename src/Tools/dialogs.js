@@ -83,7 +83,7 @@ export class DialogTools {
      * @param {Translation.Dialog} dialogPrototye
      * @return {Translation.Dialog}
      */
-    static replicateTypedItemDialog(groupNames, assetNames, dialogPrototye) {
+    static replicateGroupedItemDialog(groupNames, assetNames, dialogPrototye) {
         return groupNames.reduce((pv, group) => {
             for (const asset of assetNames) {
                 for (const [lang, entry] of Object.entries(dialogPrototye)) {
@@ -125,5 +125,23 @@ export class DialogTools {
             }
             return pv;
         }, /** @type {Translation.Dialog} */ ({}));
+    }
+
+    /**
+     * 从 语言-身体组-条目 的翻译字典中提取出 语言-条目 的翻译
+     * 从 { CN: { Cloth: { MyItem: "我的物品" } }} 这样的字典中提取出 { CN: { MyItem: "我的物品" } } 时很有用
+     * @param { Translation.GroupedEntries } translations 翻译字典
+     * @param { CustomGroupName } group 身体组
+     * @param { string } entry 条目
+     * @returns { Translation.Entry } 条目翻译
+     */
+    static pickDialog(translations, group, entry) {
+        const result = {};
+        for (const lang in translations) {
+            if (translations[lang][group] && translations[lang][group][entry]) {
+                result[lang] = translations[lang][group][entry];
+            }
+        }
+        return result;
     }
 }

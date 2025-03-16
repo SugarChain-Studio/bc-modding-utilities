@@ -34,6 +34,8 @@ const ItemGroups = [
 
 const CustomDialogPrefix = "Luzi_";
 
+export { DialogTools };
+
 export class Tools {
     /**
      * 发送自定义动作对话
@@ -167,14 +169,6 @@ export class Tools {
 
         return `Assets/${A.Group.Family}/${GroupName}/${poseSegment}${urlParts.join("_")}.png`;
     }
-
-    static replicateTypedItemDialog = DialogTools.replicateTypedItemDialog;
-
-    static makeCustomDialogGenerator = DialogTools.makeCustomDialogGenerator;
-
-    static replicateCustomDialog = DialogTools.replicateCustomDialog;
-
-    static dialogGenerator = DialogTools.dialogGenerator;
 
     /**
      *
