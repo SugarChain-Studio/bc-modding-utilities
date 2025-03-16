@@ -6,6 +6,7 @@ import { addCustomDialog, setupCustomDialog } from "./dialog";
 import { pickEntry, setupEntries } from "./entries";
 import { enableCustomAssets, getCustomAssets } from "./customStash";
 import { addLayerNames, addLayerNamesByEntry, setupLayerNameLoad } from "./layerNames";
+import { enableNonModValidation } from "./validation";
 
 export default class AssetManager {
     /**
@@ -162,4 +163,9 @@ export default class AssetManager {
         componentSetup();
         runSetupLoad();
     }
+
+    /**
+     * 启用非mod移除操作验证
+     */
+    static enableNonModValidation = enableNonModValidation;
 }
