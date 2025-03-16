@@ -15,17 +15,17 @@ type CustomGroupBodyName =
     | AssetGroupBodyName
     | `${AssetGroupBodyName}_笨笨蛋Luzi`
     | `${AssetGroupBodyName}_笨笨笨蛋Luzi2`
-    | "Liquid2_Luzi"
-    | "BodyMarkings2_Luzi"
-    | "动物身体_Luzi"
-    | "长袖子_Luzi"
-    | "新前发_Luzi"
-    | "新后发_Luzi"
-    | "额外头发_Luzi"
-    | "额外身高_Luzi"
-    | "身体痕迹_Luzi"
-    | "眼睛左_Luzi"
-    | "眼睛右_Luzi";
+    | 'Liquid2_Luzi'
+    | 'BodyMarkings2_Luzi'
+    | '动物身体_Luzi'
+    | '长袖子_Luzi'
+    | '新前发_Luzi'
+    | '新后发_Luzi'
+    | '额外头发_Luzi'
+    | '额外身高_Luzi'
+    | '身体痕迹_Luzi'
+    | '眼睛左_Luzi'
+    | '眼睛右_Luzi';
 
 /** 扩展身体组名称 */
 type CustomGroupName = AssetGroupItemName | CustomGroupBodyName | AssetGroupScriptName;
@@ -42,16 +42,8 @@ declare namespace _ {
 
     /** 不同身体组的定义类型 */
     namespace CGroupDef {
-        type Item = _.SetType<
-            _.ExtendType<AssetGroupDefinition.Item, AssetGroupName, CustomGroupName>,
-            "Group",
-            AssetGroupItemName
-        >;
-        type Appearance = _.SetType<
-            _.ExtendType<AssetGroupDefinition.Appearance, AssetGroupName, CustomGroupName>,
-            "Group",
-            CustomGroupBodyName
-        >;
+        type Item = _.ExtendType<AssetGroupDefinition.Item, AssetGroupName, CustomGroupName>;
+        type Appearance = _.ExtendType<AssetGroupDefinition.Appearance, AssetGroupName, CustomGroupName>;
         type Script = AssetGroupDefinition.Script;
     }
 
@@ -64,12 +56,12 @@ declare namespace _ {
 
     type GroupedAssetType = {
         [K in CustomGroupName]?: K extends AssetGroupItemName
-        ? CAssetDef.Item[]
-        : K extends CustomGroupBodyName
-        ? CAssetDef.Appearance[]
-        : K extends AssetGroupScriptName
-        ? CAssetDef.Script[]
-        : never;
+            ? CAssetDef.Item[]
+            : K extends CustomGroupBodyName
+            ? CAssetDef.Appearance[]
+            : K extends AssetGroupScriptName
+            ? CAssetDef.Script[]
+            : never;
     };
 }
 
@@ -137,17 +129,20 @@ declare namespace Translation {
 type FuncWork<Args extends any[] = []> = (...args: Args) => void;
 
 type AssetOverrideLeaf = string | AssetOverrideContainer;
-type AssetOverrideContainer = Record<string, AssetOverrideLeaf>;
 
-type CopyGroupInfo = { name: CustomGroupName; mirror: AssetGroupName; description?: TranslationEntry };
+interface AssetOverrideContainer {
+    [key: string]: AssetOverrideLeaf;
+}
+
+type CopyGroupInfo = { name: CustomGroupName; mirror: AssetGroupName; description?: Translation.Entry };
 
 declare namespace ModManagerInterface {
     namespace _ {
-        type PatchHook<T extends (...args: any[]) => any> = import("bondage-club-mod-sdk").PatchHook<T>;
-        type GetDotedPathType<K extends string> = import("bondage-club-mod-sdk").GetDotedPathType<typeof globalThis, K>;
+        type PatchHook<T extends (...args: any[]) => any> = import('bondage-club-mod-sdk').PatchHook<T>;
+        type GetDotedPathType<K extends string> = import('bondage-club-mod-sdk').GetDotedPathType<typeof globalThis, K>;
     }
-    type ModSDKModInfo = import("bondage-club-mod-sdk").ModSDKModInfo;
-    type ModSDKModAPI = import("bondage-club-mod-sdk").ModSDKModAPI;
+    type ModSDKModInfo = import('bondage-club-mod-sdk').ModSDKModInfo;
+    type ModSDKModAPI = import('bondage-club-mod-sdk').ModSDKModAPI;
 
     type HookFunction<T extends string> = _.PatchHook<_.GetDotedPathType<T>>;
     type FunctionArguments<T extends string> = Parameters<HookFunction<T>>[0];
@@ -163,40 +158,40 @@ declare namespace ModManagerInterface {
 }
 
 declare namespace ProgressiveHookInterface {
-    type InjectWork<T extends string> = { value: "inject"; work: ModManager.InjectFunction<T> };
-    type NextWork<T extends string> = { value: "next" };
-    type OverrideWork<T extends string> = { value: "override"; work: ModManager.HookFunction<T> };
-    type FlagWork<T extends string> = { value: "flag"; flag: boolean; once: boolean };
-    type CheckWork<T extends string> = { value: "check"; work: ModManager.CheckFunction<T> };
+    type InjectWork<T extends string> = { value: 'inject'; work: ModManagerInterface.InjectFunction<T> };
+    type NextWork<T extends string> = { value: 'next' };
+    type OverrideWork<T extends string> = { value: 'override'; work: ModManagerInterface.HookFunction<T> };
+    type FlagWork<T extends string> = { value: 'flag'; flag: boolean; once: boolean };
+    type CheckWork<T extends string> = { value: 'check'; work: ModManagerInterface.CheckFunction<T> };
 
     type WorkType<T extends string> = InjectWork<T> | NextWork<T> | OverrideWork<T> | FlagWork<T> | CheckWork<T>;
 }
 
 type CustomActivityPrerequisite =
     | ActivityPrerequisite
-    | "TargetHasTail"
-    | "TargetHasWings"
-    | "TargetHasLeash"
-    | "TargetHasCatTail"
-    | "TargetHasTentacles"
-    | "NeedTentacles"
-    | "NeedPawMittens"
-    | "NeedPetSuit"
-    | "NeedKennel"
-    | "TargetHasItemVulvaPiercings"
-    | "TargetHasItemVulva"
-    | "NeedSword"
-    | "NeedScissors"
-    | "NeedCloth"
-    | "NeedNoCloth"
-    | "NeedNoClothLower"
-    | "NeedBra"
-    | "NeedPanties"
-    | "NeedSocks"
-    | "NeedSuitLower鱼鱼尾_Luzi"
-    | "Need阿巴阿巴_Luzi";
+    | 'TargetHasTail'
+    | 'TargetHasWings'
+    | 'TargetHasLeash'
+    | 'TargetHasCatTail'
+    | 'TargetHasTentacles'
+    | 'NeedTentacles'
+    | 'NeedPawMittens'
+    | 'NeedPetSuit'
+    | 'NeedKennel'
+    | 'TargetHasItemVulvaPiercings'
+    | 'TargetHasItemVulva'
+    | 'NeedSword'
+    | 'NeedScissors'
+    | 'NeedCloth'
+    | 'NeedNoCloth'
+    | 'NeedNoClothLower'
+    | 'NeedBra'
+    | 'NeedPanties'
+    | 'NeedSocks'
+    | 'NeedSuitLower鱼鱼尾_Luzi'
+    | 'Need阿巴阿巴_Luzi';
 
-type CustomActivity = Omit<Activity, "Name" | "Prerequisite" | "ActivityID"> & {
+type CustomActivity = Omit<Activity, 'Name' | 'Prerequisite' | 'ActivityID'> & {
     Name: string;
     ActivityID?: number;
     Prerequisite: ActivityManagerInterface.ExCustomActivityPrerequisite[];
@@ -207,12 +202,12 @@ declare namespace Translation {
 }
 
 declare namespace ActivityManagerInterface {
-    type ActivityDialogKey = `Chat${"Other" | "Self"}-${AssetGroupItemName}-${CustomActivity["Name"]}`;
+    type ActivityDialogKey = `Chat${'Other' | 'Self'}-${AssetGroupItemName}-${CustomActivity['Name']}`;
 
-    type ActivityRunnableTriggerMode = "OnSelf" | "OtherOnSelf" | "OnOther";
+    type ActivityRunnableTriggerMode = 'OnSelf' | 'OtherOnSelf' | 'OnOther';
 
     type PrerequisiteCheckFunction = (
-        ...args: ModManagerInterface.FunctionArguments<"ActivityCheckPrerequisite">
+        ...args: ModManagerInterface.FunctionArguments<'ActivityCheckPrerequisite'>
     ) => boolean;
 
     type ExCustomActivityPrerequisite = CustomActivityPrerequisite | ActivityManagerInterface.PrerequisiteCheckFunction;
@@ -284,28 +279,25 @@ type DrawFunParameters<T extends (...args: any[]) => any> = T extends (
     : never;
 
 type SliceParameters<E extends number, T extends (...args: any[]) => any> = E extends 0
-    ? args
+    ? T
     : E extends 1
-    ? T extends (_: any, ...args: infer P) => any
-    ? P
-    : never
+    ? T extends (_1: any, ...args: infer P) => any
+        ? P
+        : never
     : E extends 2
-    ? T extends (_: any, _: any, ...args: infer P) => any
-    ? P
-    : never
+    ? T extends (_1: any, _2: any, ...args: infer P) => any
+        ? P
+        : never
     : E extends 3
-    ? T extends (_: any, _: any, _: any, ...args: infer P) => any
-    ? P
-    : never
+    ? T extends (_1: any, _2: any, _3: any, ...args: infer P) => any
+        ? P
+        : never
     : E extends 4
-    ? T extends (_: any, _: any, _: any, _: any, ...args: infer P) => any
-    ? P
-    : never
+    ? T extends (_1: any, _2: any, _3: any, _4: any, ...args: infer P) => any
+        ? P
+        : never
     : E extends 5
-    ? T extends (_: any, _: any, _: any, _: any, _: any, ...args: infer P) => any
-    ? P
-    : never
+    ? T extends (_1: any, _2: any, _3: any, _4: any, _5: any, ...args: infer P) => any
+        ? P
+        : never
     : never;
-
-type Rect = { X: number; Y: number; W: number; H: number };
-type Point = { X: number; Y: number };
