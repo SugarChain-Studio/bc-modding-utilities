@@ -1,5 +1,5 @@
 import { RecordEntries, RecordMap } from "../fp";
-import ModManager from "../ModManager";
+import { HookManager } from "@sugarch/bc-mod-hook-manager";
 import { Option } from "../fp";
 
 /** @type { _.PRecord<ServerChatRoomLanguage, Record<ActivityManagerInterface.ActivityDialogKey, string>> } */

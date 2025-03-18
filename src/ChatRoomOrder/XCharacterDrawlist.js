@@ -1,4 +1,4 @@
-import ModManager from "../ModManager";
+import { HookManager } from "@sugarch/bc-mod-hook-manager";
 import { setXDrawState } from "./sync";
 
 /**

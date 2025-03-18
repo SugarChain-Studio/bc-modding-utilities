@@ -1,4 +1,4 @@
-import ModManager from "../ModManager";
+import { HookManager } from "@sugarch/bc-mod-hook-manager";
 import { Path } from "../path";
 import { sleepUntil } from "../sleep";
 import { Mapping } from "../ImageMapping";

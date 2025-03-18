@@ -1,6 +1,6 @@
-import ModManager from "../ModManager";
+import { HookManager } from "@sugarch/bc-mod-hook-manager";
 import { key } from "./constant";
-import { ChatRoomEvents } from "../Events";
+import { ChatRoomEvents } from "@sugarch/bc-event-handler";
 
 let doSync = false;
 function syncRun() {
