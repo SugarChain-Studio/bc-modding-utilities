@@ -27,112 +27,34 @@ type CustomGroupBodyName =
     | '眼睛左_Luzi'
     | '眼睛右_Luzi';
 
-/** 扩展身体组名称 */
-type CustomGroupName = AssetGroupItemName | CustomGroupBodyName | AssetGroupScriptName;
+type FuncWork<T extends any[] = []> = (...args: T) => void;
 
-declare namespace _ {
-    /** 将 T 类型中的 From 类型 *递归地* 替换为 To 类型。主要用于把 AssetGroupName 替换为 CustomGroupName。*/
-    type ExtendType<T, From, To> = { [K in keyof T]: T[K] extends From ? To : ExtendType<T[K], From, To> };
+type MyAssetManager = import('@sugarch/bc-asset-manager').AssetManagerType<CustomGroupBodyName>;
 
-    /** 将 S 类型中的 K 指定的属性的类型替换为 T 类型。 */
-    type SetType<S, K extends keyof T, T> = Omit<S, K> & { [P in K]: T };
+type CustomGroupName = import('@sugarch/bc-asset-manager').CustomGroupName<CustomGroupBodyName>;
 
-    /** 等效于Partial<Record<K,T>>，写太多写累了 */
-    type PRecord<K extends string, T> = { [P in K]?: T };
+type CustomGroupDefinition = import('@sugarch/bc-asset-manager').CustomGroupDefinition<CustomGroupBodyName>;
 
-    /** 不同身体组的定义类型 */
-    namespace CGroupDef {
-        type Item = _.ExtendType<AssetGroupDefinition.Item, AssetGroupName, CustomGroupName>;
-        type Appearance = _.ExtendType<AssetGroupDefinition.Appearance, AssetGroupName, CustomGroupName>;
-        type Script = AssetGroupDefinition.Script;
-    }
+type CustomAssetDefinitionItem = import('@sugarch/bc-asset-manager').CustomAssetDefinitionItem<CustomGroupBodyName>;
 
-    /** 不同身体组的物品定义类型 */
-    namespace CAssetDef {
-        type Item = _.ExtendType<AssetDefinition.Item, AssetGroupName, CustomGroupName>;
-        type Appearance = _.ExtendType<AssetDefinition.Appearance, AssetGroupName, CustomGroupName>;
-        type Script = AssetDefinition.Script;
-    }
+type CustomAssetDefinitionAppearance =
+    import('@sugarch/bc-asset-manager').CustomAssetDefinitionAppearance<CustomGroupBodyName>;
 
-    type GroupedAssetType = {
-        [K in CustomGroupName]?: K extends AssetGroupItemName
-            ? CAssetDef.Item[]
-            : K extends CustomGroupBodyName
-            ? CAssetDef.Appearance[]
-            : K extends AssetGroupScriptName
-            ? CAssetDef.Script[]
-            : never;
-    };
-}
-
-/** 自定义身体组定义，支持扩展的身体组名称 */
-type CustomGroupDefinition = _.CGroupDef.Item | _.CGroupDef.Appearance | _.CGroupDef.Script;
-
-/** 自定义道具物品定义 */
-type CustomAssetDefinitionItem = _.CAssetDef.Item;
-
-/** 自定义外观物品定义 */
-type CustomAssetDefinitionAppearance = _.CAssetDef.Appearance;
-
-/** 自定义物品定义，支持扩展的身体组名称 */
-type CustomAssetDefinition = CustomAssetDefinitionItem | CustomAssetDefinitionAppearance | _.CAssetDef.Script;
+type CustomAssetDefinition = import('@sugarch/bc-asset-manager').CustomAssetDefinition<CustomGroupBodyName>;
 
 /** 按照身体组分类的物品定义 */
-type CustomGroupedAssetDefinitions = _.GroupedAssetType;
-
-/** 自定义图片映射 */
-type CustomImageMapping = Record<string, string>;
+type CustomGroupedAssetDefinitions =
+    import('@sugarch/bc-asset-manager').CustomGroupedAssetDefinitions<CustomGroupBodyName>;
 
 declare namespace Translation {
-    type CustomRecord<T extends string, U> = _.PRecord<ServerChatRoomLanguage, _.PRecord<T, U>>;
-
-    /**
-     * 物品描述翻译条目
-     * @example
-     * { CN: "中文名字", EN: "English Name" }
-     */
-    type Entry = _.PRecord<ServerChatRoomLanguage, string>;
-
-    /**
-     * 自定义的对话条目
-     *
-     * @example
-     * // 为对话条目 "ItemTorso抚摸" 定义翻译
-     * {
-     *   CN: {
-     *      "ItemTorso抚摸":"抚摸"
-     *   },
-     *   EN: {
-     *      "ItemTorso抚摸":"Caresse"
-     *   }
-     * }
-     *
-     */
-    type Dialog = _.PRecord<ServerChatRoomLanguage, Record<string, string>>;
-
-    /**
-     * 按组分类的，含有很多物品的，描述翻译条目
-     * @example
-     * // 为 "ItemDevices" 组的 "物品名字_Luzi" 物品定义翻译
-     * {
-     *     CN: {
-     *         "ItemDevices" : { "物品名字_Luzi": "中文名字"}
-     *     },
-     *     EN: {
-     *         "ItemDevices" : { "物品名字_Luzi": "English Name"}
-     *    }
-     * }
-     */
-    type GroupedEntries = CustomRecord<CustomGroupName, Record<string, string>>;
+    type Entry = import('@sugarch/bc-asset-manager').Translation.Entry;
+    type Dialog = import('@sugarch/bc-asset-manager').Translation.Dialog;
+    type ActivityEntry = import('@sugarch/bc-asset-manager').Translation.ActivityEntry;
+    type GroupedEntries = import('@sugarch/bc-asset-manager').Translation.GroupedEntries<CustomGroupBodyName>;
+    type CustomRecord<T extends string, U> = import('@sugarch/bc-asset-manager').Translation.CustomRecord<T, U>;
 }
 
-type FuncWork<Args extends any[] = []> = (...args: Args) => void;
-
-type AssetOverrideLeaf = string | AssetOverrideContainer;
-
-interface AssetOverrideContainer {
-    [key: string]: AssetOverrideLeaf;
-}
+type AssetOverrideContainer = import('@sugarch/bc-asset-manager').AssetOverrideContainer;
 
 type CopyGroupInfo = { name: CustomGroupName; mirror: AssetGroupName; description?: Translation.Entry };
 
@@ -165,10 +87,6 @@ type CustomActivity = Omit<Activity, 'Name' | 'Prerequisite' | 'ActivityID'> & {
     ActivityID?: number;
     Prerequisite: ActivityManagerInterface.ExCustomActivityPrerequisite[];
 };
-
-declare namespace Translation {
-    type ActivityEntry = _.PRecord<ServerChatRoomLanguage, _.PRecord<AssetGroupItemName, string>>;
-}
 
 declare namespace ActivityManagerInterface {
     type ActivityDialogKey = `Chat${'Other' | 'Self'}-${AssetGroupItemName}-${CustomActivity['Name']}`;
