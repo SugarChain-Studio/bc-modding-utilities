@@ -99,22 +99,22 @@ export class XCharacterDrawlist {
 }
 
 export function setupXCharacterDrawlist() {
-    const func = ModManager.randomGlobalFunction("CreateX", () => new XCharacterDrawlist(ChatRoomCharacterDrawlist));
+    const func = HookManager.randomGlobalFunction("CreateX", () => new XCharacterDrawlist(ChatRoomCharacterDrawlist));
 
-    ModManager.patchFunction("ChatRoomCharacterViewLoopCharacters", {
+    HookManager.patchFunction("ChatRoomCharacterViewLoopCharacters", {
         "for (let C = 0; C < ChatRoomCharacterDrawlist.length; C++) {": `const XDraws = ${func}(); for (let C = 0; C < ChatRoomCharacterDrawlist.length; C++) { const CN = XDraws.next();`,
         "!ChatRoomCharacterDrawlist[C].IsPlayer()": "!ChatRoomCharacterDrawlist[CN].IsPlayer()",
         "const res = callback(C, CharX, CharY, Space, Zoom);":
             "const res = callback(C, CharX, CharY, Space, Zoom, CN);",
     });
 
-    ModManager.patchFunction("ChatRoomCharacterViewDraw", {
+    HookManager.patchFunction("ChatRoomCharacterViewDraw", {
         "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, _space, roomZoom) => {":
             "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, _space, roomZoom, cIdx) => {",
         "ChatRoomCharacterDrawlist[charIdx]": "ChatRoomCharacterDrawlist[cIdx]",
     });
 
-    ModManager.patchFunction("ChatRoomCharacterViewClick", {
+    HookManager.patchFunction("ChatRoomCharacterViewClick", {
         "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, space, zoom) => {":
             "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, space, zoom, cIdx) => {",
         "ChatRoomCharacterDrawlist[charIdx]": "ChatRoomCharacterDrawlist[cIdx]",
@@ -125,7 +125,7 @@ export function setupXCharacterDrawlist() {
         Click: ChatRoomCharacterViewClick,
     });
 
-    ModManager.progressiveHook("DrawCharacter", 100)
+    HookManager.progressiveHook("DrawCharacter", 100)
         .inside("ChatRoomCharacterViewLoopCharacters")
         .inject((args, next) => {
             const [C, X, Y, Zoom] = args;

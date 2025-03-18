@@ -71,12 +71,12 @@ function validate(data) {
 }
 
 export function setupSync() {
-    ModManager.hookFunction("ChatRoomSync", 10, (args, next) => {
+    HookManager.hookFunction("ChatRoomSync", 10, (args, next) => {
         setSync();
         next(args);
     });
 
-    ModManager.hookFunction("ChatRoomSyncMemberLeave", 10, (args, next) => {
+    HookManager.hookFunction("ChatRoomSyncMemberLeave", 10, (args, next) => {
         setSync();
         next(args);
     });

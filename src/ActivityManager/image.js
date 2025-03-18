@@ -40,7 +40,7 @@ export function setupImgMapping() {
     (async () => {
         await sleepUntil(() => globalThis["ElementButton"] !== undefined);
 
-        ModManager.hookFunction("ElementButton.CreateForActivity", 0, (args, next) => {
+        HookManager.hookFunction("ElementButton.CreateForActivity", 0, (args, next) => {
             const _args = /** @type {any[]} */ (args);
             mapping.mapImg(Path.ActivityPreviewIconPath(/** @type {ItemActivity} */ (args[1])), (image) => {
                 _args[4] = { ..._args[4], image };

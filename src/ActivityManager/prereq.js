@@ -13,7 +13,7 @@ export function addPrerequisite(prereq) {
 }
 
 export function setupPrereq() {
-    ModManager.hookFunction("ActivityCheckPrerequisite", 1, (args, next) => {
+    HookManager.hookFunction("ActivityCheckPrerequisite", 1, (args, next) => {
         const cusPrereq = prereqMap[args[0]];
         if (cusPrereq) return cusPrereq.test(...args);
         return next(args);

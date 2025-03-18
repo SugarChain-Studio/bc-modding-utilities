@@ -1,6 +1,6 @@
-import { ChatRoomEvents } from "./Events";
+import { ChatRoomEvents } from "@sugarch/bc-event-handler";
 import { Globals } from "./globals";
-import ModManager from "./ModManager";
+import { HookManager } from "@sugarch/bc-mod-hook-manager";
 
 const ECHO_INFO_TAG = "ECHO_INFO2";
 
@@ -70,7 +70,7 @@ export class CharacterTagInstance {
             };
         };
 
-        ModManager.afterPlayerLogin(() => {
+        HookManager.afterPlayerLogin(() => {
             tagPlayer();
         });
     }
@@ -139,11 +139,11 @@ export class CharacterTag {
         if (instance.hooked) return;
         instance.hooked = true;
 
-        ModManager.progressiveHook("ChatRoomSyncMemberJoin", 10).inject((args, next) => {
+        HookManager.progressiveHook("ChatRoomSyncMemberJoin", 10).inject((args, next) => {
             this.instance.send(args[0].SourceMemberNumber);
         });
 
-        ModManager.progressiveHook("ChatRoomSync", 10).inject((args, next) => {
+        HookManager.progressiveHook("ChatRoomSync", 10).inject((args, next) => {
             this.instance.send();
         });
 

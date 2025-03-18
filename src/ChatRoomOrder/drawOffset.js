@@ -21,7 +21,7 @@ export class DrawCharacterModifier {
         if (globalThis[DrawOffsetInstanceName]) return;
         globalThis[DrawOffsetInstanceName] = DrawCharacterModifier;
 
-        ModManager.progressiveHook("DrawCharacter", 1)
+        HookManager.progressiveHook("DrawCharacter", 1)
             .inside("ChatRoomCharacterViewLoopCharacters")
             .inject((args, next) => {
                 const [C, X, Y, Zoom] = args;
