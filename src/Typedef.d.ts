@@ -27,6 +27,8 @@ type CustomGroupBodyName =
     | '眼睛左_Luzi'
     | '眼睛右_Luzi';
 
+type CustomGroupName = import('@sugarch/bc-mod-types').CustomGroupName<CustomGroupBodyName>;
+
 declare namespace Translation {
     type Entry = import('@sugarch/bc-mod-types').Translation.Entry;
     type Dialog = import('@sugarch/bc-mod-types').Translation.Dialog;
@@ -36,8 +38,6 @@ declare namespace Translation {
 }
 
 type AssetOverrideContainer = import('@sugarch/bc-mod-types').AssetOverrideContainer;
-
-type CopyGroupInfo = { name: CustomGroupName; mirror: AssetGroupName; description?: Translation.Entry };
 
 declare function ServerSend<T extends keyof ClientToServerEvents>(
     Message: T,
