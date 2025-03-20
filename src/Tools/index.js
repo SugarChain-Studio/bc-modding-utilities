@@ -32,8 +32,6 @@ const ItemGroups = [
     "ItemBoots",
 ];
 
-const CustomDialogPrefix = "Luzi_";
-
 export { DialogTools };
 
 export class Tools {

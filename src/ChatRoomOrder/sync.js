@@ -9,7 +9,7 @@ function syncRun() {
     if (!pl || !pl?.MemberNumber) return;
     if (!pl?.XCharacterDrawOrder) return;
     /** @type {XCharacterDrawOrderState} */
-    const data = Object.fromEntries(Object.entries(pl.XCharacterDrawOrder).filter(([k, v]) => k !== "drawState"));
+    const data = Object.fromEntries(Object.entries(pl.XCharacterDrawOrder).filter(([k]) => k !== "drawState"));
     if (!data) return;
     doSync = false;
     ServerSend("ChatRoomChat", {
@@ -85,7 +85,7 @@ export function setupSync() {
         if (Content === "ServerEnter") setSync();
     });
 
-    ChatRoomEvents.on("Hidden", ({ Type, Content, Sender, Dictionary }) => {
+    ChatRoomEvents.on("Hidden", ({ Content, Sender, Dictionary }) => {
         if (Content === key) {
             /** @type {XCharacter}*/
             const target = ChatRoomCharacter.find((c) => c.MemberNumber === Sender);

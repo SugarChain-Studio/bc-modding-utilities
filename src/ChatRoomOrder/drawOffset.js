@@ -23,7 +23,7 @@ export class DrawCharacterModifier {
 
         HookManager.progressiveHook("DrawCharacter", 1)
             .inside("ChatRoomCharacterViewLoopCharacters")
-            .inject((args, next) => {
+            .inject((args) => {
                 const [C, X, Y, Zoom] = args;
                 let result = { X, Y, Zoom };
                 for (const modifier of modifiers) {

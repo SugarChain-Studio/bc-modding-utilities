@@ -24,7 +24,7 @@ function getLatestSemverTag() {
  */
 function relativePath(from, to) {
     const ret = path.relative(from, to).replace(/\\/g, "/");
-    if (ret == "") return ".";
+    if (ret === "") return ".";
     return !ret.startsWith("./") ? `./${ret}` : ret;
 }
 
@@ -42,8 +42,8 @@ function collectComponents(componentsDir, baseDir, importStartDir) {
     const compDir = `${baseDir}/${componentsDir}`;
 
     const files = ((dir) => {
-        let dirWork = [dir];
-        let files = [];
+        const dirWork = [dir];
+        const files = [];
         while (dirWork.length > 0) {
             const dir = dirWork.pop();
             const rDir = relativePath(importStartDir, dir);
@@ -122,9 +122,9 @@ function buildRollupSetting(packageObj, debugFlag, betaFlag) {
  */
 async function readAssetsMapping(startDir, assetDirs) {
     const git_root = execSync("git rev-parse --show-toplevel").toString().trim();
-    let assets = {};
+    const assets = {};
 
-    let git_asset = new Set();
+    const git_asset = new Set();
 
     execSync("git config core.quotepath false");
 
@@ -174,7 +174,7 @@ async function readAssetsMapping(startDir, assetDirs) {
             });
 
             return new Promise((resolve, reject) => {
-                ls_tree.on("exit", (code) => {
+                ls_tree.on("exit", () => {
                     if (prev_unfinished && prev_unfinished.length > 0) process_line(prev_unfinished.toString());
                     resolve();
                 });
@@ -292,10 +292,11 @@ async function createRollupConfig(baseURL, modInfo, rollupSetting, utilDir, beta
                         src: `${curDirRelative}/${utilDir}/loader.template.user.js`,
                         dest: buildDestDir,
                         rename: rollupSetting.loaderName,
-                        transform: (contents, filename) =>
-                            Object.entries(loader_replaces).reduce((pv, [from, to]) => {
-                                return pv.replace(from, to);
-                            }, contents.toString()),
+                        transform: (contents) =>
+                            Object.entries(loader_replaces).reduce(
+                                (pv, [from, to]) => pv.replace(from, to),
+                                contents.toString()
+                            ),
                     },
                 ],
             }),
@@ -327,7 +328,7 @@ module.exports = (cliArgs) => {
     const setting = buildRollupSetting(packageJSON, debug, beta);
 
     const log = (msg) => {
-        console.log(`[${modInfo.name}] ${msg}`);
+        console.info(`[${modInfo.name}] ${msg}`);
     };
 
     if (debug) log("Debug mode enabled");

@@ -58,7 +58,6 @@ type AssetOverrideContainer = import('@sugarch/bc-asset-manager').AssetOverrideC
 
 type CopyGroupInfo = { name: CustomGroupName; mirror: AssetGroupName; description?: Translation.Entry };
 
-
 declare function ServerSend<T extends keyof ClientToServerEvents>(
     Message: T,
     ...args: Parameters<ClientToServerEvents[T]>

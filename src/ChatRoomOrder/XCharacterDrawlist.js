@@ -64,7 +64,7 @@ export class XCharacterDrawlist {
 
         if (!Array.isArray(drawlist)) return;
 
-        let mMap = new Map(Array.from(drawlist, (c, idx) => [c.MemberNumber, idx]));
+        const mMap = new Map(Array.from(drawlist, (c, idx) => [c.MemberNumber, idx]));
 
         let cList = Array.from(drawlist, (_, idx) => idx);
         /** @type {number[]} */
@@ -127,7 +127,7 @@ export function setupXCharacterDrawlist() {
 
     HookManager.progressiveHook("DrawCharacter", 100)
         .inside("ChatRoomCharacterViewLoopCharacters")
-        .inject((args, next) => {
+        .inject((args) => {
             const [C, X, Y, Zoom] = args;
 
             const pl = /** @type {XCharacter} */ (C);

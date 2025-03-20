@@ -52,7 +52,6 @@ export class CharacterTagInstance {
         this.localTag = old.localTag;
         this.hooked = old.hooked;
 
-        console.log("migrated");
         return true;
     }
 
@@ -139,11 +138,11 @@ export class CharacterTag {
         if (instance.hooked) return;
         instance.hooked = true;
 
-        HookManager.progressiveHook("ChatRoomSyncMemberJoin", 10).inject((args, next) => {
+        HookManager.progressiveHook("ChatRoomSyncMemberJoin", 10).inject((args, _) => {
             this.instance.send(args[0].SourceMemberNumber);
         });
 
-        HookManager.progressiveHook("ChatRoomSync", 10).inject((args, next) => {
+        HookManager.progressiveHook("ChatRoomSync", 10).inject(() => {
             this.instance.send();
         });
 
