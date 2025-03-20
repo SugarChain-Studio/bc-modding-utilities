@@ -4,8 +4,9 @@
  */
 
 /**
+ * @template {string} GroupName
  * @typedef { Object } DialogGeneratorParam
- * @property { CustomGroupName [] } groups 需要生成对话的物品组名
+ * @property { GroupName [] } groups 需要生成对话的物品组名
  * @property { string[] } itemNames 需要生成对话的物品名
  * @property { string } selectBase 主页面标题文本
  * @property { MainDialogGenerator } module 产生主页面按钮文本（Module）和子页面标题（Select）名字的函数
@@ -17,8 +18,9 @@ const CustomDialogPrefix = "Luzi_";
 export class DialogTools {
     /**
      * 为 ModularItem 生成对话
+     * @template {string} GroupName
      * @param {ModularItemModuleConfig[]} configs 需要生成对话的模块配置
-     * @param {DialogGeneratorParam} param 生成对话的参数
+     * @param {DialogGeneratorParam<GroupName>} param 生成对话的参数
      * @param {Record<string,string>} [init] 初始参数，生成过程中会避免覆盖其中的值
      * @returns {Record<string,string>} 生成的对话
      */
@@ -29,7 +31,7 @@ export class DialogTools {
             const { Select, Module } = module(cv);
 
             /**
-             * @param { (group: CustomGroupName, itemName: string) => void } cb
+             * @param { (group: GroupName, itemName: string) => void } cb
              */
             const foreachGroupItem = (cb) => {
                 for (const group of groups) {
@@ -78,7 +80,8 @@ export class DialogTools {
      *   }
      * }
      * ```
-     * @param {CustomGroupName[]} groupNames 物品组名
+     * @template {string} GroupName
+     * @param {GroupName[]} groupNames 物品组名
      * @param {string[]} assetNames 物品名
      * @param {Translation.Dialog} dialogPrototye
      * @return {Translation.Dialog}
@@ -130,8 +133,9 @@ export class DialogTools {
     /**
      * 从 语言-身体组-条目 的翻译字典中提取出 语言-条目 的翻译
      * 从 { CN: { Cloth: { MyItem: "我的物品" } }} 这样的字典中提取出 { CN: { MyItem: "我的物品" } } 时很有用
-     * @param { Translation.GroupedEntries } translations 翻译字典
-     * @param { CustomGroupName } group 身体组
+     * @template {string} GroupName
+     * @param { Partial<Record<ServerChatRoomLanguage, Partial<Record<GroupName, Record<string,string>>>>> } translations 翻译字典
+     * @param { GroupName } group 身体组
      * @param { string } entry 条目
      * @returns { Translation.Entry } 条目翻译
      */
