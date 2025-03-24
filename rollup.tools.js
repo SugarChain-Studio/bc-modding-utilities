@@ -54,7 +54,7 @@ function collectComponents(componentsDir, baseDir, importStartDir) {
                     const content = fs
                         .readFileSync(`${dir}/${file.name}`, "utf8")
                         .replace(/\/\/.*\n?|\/\*.*\*\//gm, "");
-                    if (!content.match(/export\s+default\s+function\s*\(/)) return;
+                    if (!content.match(/export\s+default\s+(function\s*\(|\(\s*\)|\w+)/)) return;
                     const fileName = file.name.replace(".js", "");
                     files.push({ name: fileName, path: `${rDir}/${fileName}` });
                 }
