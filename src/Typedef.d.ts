@@ -24,8 +24,8 @@ type CustomGroupBodyName =
     | '额外头发_Luzi'
     | '额外身高_Luzi'
     | '身体痕迹_Luzi'
-    | '眼睛左_Luzi'
-    | '眼睛右_Luzi';
+    | '左眼_Luzi'
+    | '右眼_Luzi';
 
 type CustomGroupName = import('@sugarch/bc-mod-types').CustomGroupName<CustomGroupBodyName>;
 
