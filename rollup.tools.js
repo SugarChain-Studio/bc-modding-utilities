@@ -196,7 +196,7 @@ async function readAssetsMapping(startDir, assetDirs) {
                 .forEach((line) => {
                     if (line.length < 4) return;
                     const status = line.substring(0, 2);
-                    if (status !== " M" && status !== "M " && status !== "R " && status !== "??") return;
+                    if (![" M", "M ", "R ", "??", "A "].includes(status)) return;
 
                     const line_path_part = status === "R " ? line.substring(3).split(" -> ")[1] : line.substring(3);
 
@@ -307,7 +307,6 @@ async function createRollupConfig(baseURL, modInfo, rollupSetting, utilDir, beta
             alias({
                 entries: {
                     "@mod-utils": `${curDir}/${utilDir}/src`,
-                    "bondage-club-mod-sdk": `${curDir}/node_modules/bondage-club-mod-sdk`,
                 },
             }),
             commonjs(),
