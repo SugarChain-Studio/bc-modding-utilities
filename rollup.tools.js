@@ -122,11 +122,26 @@ function buildRollupSetting(packageObj, debugFlag, betaFlag) {
  */
 async function readAssetsMapping(startDir, assetDirs) {
     const git_root = execSync("git rev-parse --show-toplevel").toString().trim();
+
+    /** @type {AssetOverrideContainer} */
     const assets = {};
 
-    const git_asset = new Set();
+    /**
+     * Map<路径, 版本>
+     * @type {Map<string,string>}
+     */
+    const assetCatch = new Map();
 
     execSync("git config core.quotepath false");
+
+    const addAssetCache = (path, version, override = false) => {
+        if (assetCatch.has(path) && !override) return;
+        assetCatch.set(path, version);
+    };
+
+    const removeAssetCache = (path) => {
+        assetCatch.delete(path);
+    };
 
     const addAsset = (path, version, override = false) => {
         const dirs = path.split(/\\|\//);
@@ -146,10 +161,7 @@ async function readAssetsMapping(startDir, assetDirs) {
     const process_line = (line) => {
         const [sha, fpath] = line.split(/\t/, 2);
         const relpath = path.relative(startDir, fpath);
-
-        git_asset.add(relpath);
-
-        addAsset(relpath, sha.substring(0, 7));
+        addAssetCache(relpath, sha.substring(0, 7));
     };
 
     const promises = assetDirs
@@ -190,30 +202,50 @@ async function readAssetsMapping(startDir, assetDirs) {
     await new Promise((resolve, reject) => {
         const status = spawn("git", ["status", "--porcelain", startDir], { cwd: git_root });
 
+        let prev_unfinished = Buffer.alloc(0);
+
+        const process_git_status = (line) => {
+            if (line.length < 4) return;
+            const status = line.substring(0, 2);
+            if ([" M", "M ", "R ", "??", "A "].includes(status)) {
+                const line_path_part = status === "R " ? line.substring(3).split(" -> ")[1] : line.substring(3);
+
+                const fpath = path.relative(
+                    startDir,
+                    ((src) => (src.startsWith('"') ? src.substring(1, src.length - 1) : src))(line_path_part)
+                );
+
+                if (!fpath.endsWith(".png")) return;
+                console.warn(`[WARN] [${fpath}] is not in version control, using timestamp as version`);
+                addAssetCache(fpath, timeStr, true);
+            } else if (status === " D" || status === "D ") {
+                const fpath = path.relative(startDir, line.substring(3));
+                removeAssetCache(fpath);
+                console.warn(`[WARN] [${fpath}] has been removed from version control`);
+            }
+        };
+
         status.stdout.on("data", (data) => {
-            data.toString()
-                .split("\n")
-                .forEach((line) => {
-                    if (line.length < 4) return;
-                    const status = line.substring(0, 2);
-                    if (![" M", "M ", "R ", "??", "A "].includes(status)) return;
+            const linedData = Buffer.concat([prev_unfinished, data]);
+            let start = 0;
 
-                    const line_path_part = status === "R " ? line.substring(3).split(" -> ")[1] : line.substring(3);
-
-                    const fpath = path.relative(
-                        startDir,
-                        ((src) => (src.startsWith('"') ? src.substring(1, src.length - 1) : src))(line_path_part)
-                    );
-
-                    if (!fpath.endsWith(".png")) return;
-                    console.warn(`[WARN] [${fpath}] is not in version control, using timestamp as version`);
-                    addAsset(fpath, timeStr, true);
-                });
+            for (let i = 0; i < linedData.length; i++) {
+                if (linedData[i] === 0x0a) {
+                    process_git_status(linedData.subarray(start, i).toString());
+                    start = i + 1;
+                }
+            }
+            prev_unfinished = linedData.subarray(start);
         });
 
-        status.on("exit", resolve);
+        status.on("exit", () => {
+            if (prev_unfinished && prev_unfinished.length > 0) process_git_status(prev_unfinished.toString());
+            resolve();
+        });
         status.on("error", reject);
     });
+
+    assetCatch.forEach((version, path) => addAsset(path, version));
 
     return assets;
 }
