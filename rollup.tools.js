@@ -160,7 +160,7 @@ async function readAssetsMapping(startDir, assetDirs) {
 
     const process_line = (line) => {
         const [sha, fpath] = line.split(/\t/, 2);
-        const relpath = path.relative(startDir, fpath);
+        const relpath = path.relative(startDir, fpath).replace(/\\/g, "/");
         addAssetCache(relpath, sha.substring(0, 7));
     };
 
@@ -210,10 +210,12 @@ async function readAssetsMapping(startDir, assetDirs) {
             if ([" M", "M ", "R ", "??", "A "].includes(status)) {
                 const line_path_part = status === "R " ? line.substring(3).split(" -> ")[1] : line.substring(3);
 
-                const fpath = path.relative(
-                    startDir,
-                    ((src) => (src.startsWith('"') ? src.substring(1, src.length - 1) : src))(line_path_part)
-                );
+                const fpath = path
+                    .relative(
+                        startDir,
+                        ((src) => (src.startsWith('"') ? src.substring(1, src.length - 1) : src))(line_path_part)
+                    )
+                    .replace(/\\/g, "/");
 
                 if (!fpath.endsWith(".png")) return;
                 console.warn(`[WARN] [${fpath}] is not in version control, using timestamp as version`);
