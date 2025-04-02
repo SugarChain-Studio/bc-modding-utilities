@@ -9,7 +9,7 @@ export const ModInfo = {
 /** @type { AssetOverrideContainer } */
 export const assetOverrides = JSON.parse(LZString.decompressFromBase64(__mod_asset_overrides__));
 
-export const baseURL = __mod_base_url__;
+export const baseURL = /** @type {`${'http://' | 'https://'}${string}`}*/ (__mod_base_url__);
 
 export const resourceBaseURL = __mod_resource_base_url__;
 
