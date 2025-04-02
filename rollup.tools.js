@@ -277,7 +277,7 @@ async function createRollupConfig(baseURL, modInfo, rollupSetting, utilDir, beta
             banner: ``,
         },
         treeshake: true,
-        external: ["https://cdn.jsdelivr.net/npm/sweetalert2@11/+esm"],
+        external: ["https://cdn.jsdelivr.net/npm/sweetalert2@11.6.13/+esm"],
     };
 
     const componentsImports = rollupSetting.componentDir
