@@ -273,7 +273,7 @@ async function createRollupConfig(baseURL, modInfo, rollupSetting, utilDir, beta
         output: {
             file: `${buildDestDir}/${rollupSetting.output}`,
             format: "iife",
-            sourcemap: rollupSetting.debug ? "inline" : false,
+            sourcemap: rollupSetting.debug ? "inline" : true,
             banner: ``,
         },
         treeshake: true,
