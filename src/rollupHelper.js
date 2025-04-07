@@ -14,3 +14,5 @@ export const baseURL = __mod_base_url__;
 export const resourceBaseURL = __mod_resource_base_url__;
 
 export const betaFlag = __mod_beta_flag__;
+
+export const debugFlag = __mod_debug_flag__;

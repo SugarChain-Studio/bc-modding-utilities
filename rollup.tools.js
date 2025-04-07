@@ -316,6 +316,7 @@ async function createRollupConfig(baseURL, modInfo, rollupSetting, utilDir, beta
         __mod_resource_base_url__: `"${baseURL_}${betaFlag ? "beta/" : ""}"`,
         __mod_rollup_imports__: componentsImports.imports,
         __mod_rollup_setup__: componentsImports.setups,
+        __mod_debug_flag__: `${rollupSetting.debug}`,
     };
 
     return {

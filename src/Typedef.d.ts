@@ -6,6 +6,7 @@ declare const __mod_base_url__: `${'http://' | 'https://'}${string}`;
 declare const __mod_resource_base_url__: `${'http://' | 'https://'}${string}`;
 declare const __mod_asset_overrides__: string;
 declare const __mod_beta_flag__: boolean;
+declare const __mod_debug_flag__: boolean;
 
 declare const __mod_rollup_imports__: string[];
 declare const __mod_rollup_setup__: string[];
