@@ -79,10 +79,10 @@ export class Tools {
     }
 
     /**
-     * 调整TopLeft数据工具函数
-     * @param {TopLeft.Data} data
-     * @param {number | Partial<Record<AssetPoseName | PoseTypeDefault, number>>} diff
-     * @returns {TopLeft.Data}
+     * 调整TopLeft数据工具函数，注意这个函数不会修改原始数据
+     * @param {TopLeft.Data} data 原始数据
+     * @param {number | Partial<Record<AssetPoseName | PoseTypeDefault, number>>} diff 偏差值
+     * @returns {TopLeft.Data} 调整后的数据
      */
     static topLeftAdjust(data, diff) {
         if (typeof diff === "number") {
@@ -97,10 +97,10 @@ export class Tools {
     }
 
     /**
-     * 覆写TopLeft数据工具函数
-     * @param {TopLeft.Data} data
-     * @param {number | Partial<Record<AssetPoseName | PoseTypeDefault, number>>} over
-     * @returns {TopLeft.Data}
+     * 覆写TopLeft数据工具函数，注意这个函数不会修改原始数据
+     * @param {TopLeft.Data} data 原始数据
+     * @param {number | Partial<Record<AssetPoseName | PoseTypeDefault, number>>} over 覆盖值
+     * @returns {TopLeft.Data} 覆盖后的数据
      */
     static topLeftOverride(data, over) {
         if (typeof over === "number") {
