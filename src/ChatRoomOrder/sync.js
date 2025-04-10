@@ -1,6 +1,7 @@
 import { HookManager } from "@sugarch/bc-mod-hook-manager";
-import { key } from "./constant";
 import { ChatRoomEvents } from "@sugarch/bc-event-handler";
+
+export const syncMsgKey = `Luzi_XCharacterDrawState`;
 
 let doSync = false;
 function syncRun() {
@@ -13,7 +14,7 @@ function syncRun() {
     if (!data) return;
     doSync = false;
     ServerSend("ChatRoomChat", {
-        Content: key,
+        Content: syncMsgKey,
         Type: "Hidden",
         Dictionary: [data],
     });
@@ -86,7 +87,7 @@ export function setupSync() {
     });
 
     ChatRoomEvents.on("Hidden", ({ Content, Sender, Dictionary }) => {
-        if (Content === key) {
+        if (Content === syncMsgKey) {
             /** @type {XCharacter}*/
             const target = ChatRoomCharacter.find((c) => c.MemberNumber === Sender);
             if (target) {
