@@ -14,9 +14,6 @@ import { globalPipeline } from "@sugarch/bc-mod-utility";
 
 const DrawOffsetInstanceName = "Luzi_DrawOffsetInstance";
 
-/** @type {DrawOffsetPipelineFunction[]} */
-const modifiers = [];
-
 /** @type {DrawOffsetPipelineFunction} */
 const defaultFunc = (_, from) => from;
 
