@@ -66,6 +66,23 @@ export class Tools {
     }
 
     /**
+     * 从已有的物品定义中获取图层名称，组成字典。ColorGroup也会提取。类似 _1 和 _Luzi 这样的后缀会被清理。
+     * @param {CustomAssetDefinition} assetDef
+     * @return {Record<string,string>}
+     */
+    static takeLayerNames(assetDef) {
+        /** @type {Record<string,string>} */
+        const ret = {};
+        assetDef.Layer?.filter((l) => (l.AllowColorize ?? true) && !l.CopyLayerColor && !l.HideColoring).forEach(
+            ({ Name, ColorGroup }) => {
+                ret[Name] = Name.replace(/(_\d+|_\w+)$/, "");
+                if (ColorGroup) ret[ColorGroup] = ColorGroup.replace(/(_\d+|_\w+)$/, "");
+            }
+        );
+        return ret;
+    }
+
+    /**
      * 支持文本标签，包括源角色、目标角色、目标角色（所有格）、物品名称
      * @returns {CommonChatTags[]}
      */
