@@ -9,7 +9,6 @@ const terser = require("@rollup/plugin-terser");
 const alias = require("@rollup/plugin-alias");
 const css = require("rollup-plugin-import-css");
 const { execSync, spawn } = require("child_process");
-const LZString = require("lz-string");
 
 function getLatestSemverTag() {
     const ret = execSync("git describe --tags --abbrev=0").toString().trim();
@@ -284,11 +283,9 @@ async function createRollupConfig(baseURL, modInfo, rollupSetting, utilDir, beta
         ? collectComponents(rollupSetting.componentDir, curDirRelative, rollupSetting.componentDir)
         : { imports: "", setups: "" };
 
-    const assetMapping = LZString.compressToBase64(
-        rollupSetting.assets
-            ? JSON.stringify(await readAssetsMapping(rollupSetting.assets.location, rollupSetting.assets.assets))
-            : "{}"
-    );
+    const assetMappings = await readAssetsMapping(rollupSetting.assets.location, rollupSetting.assets.assets);
+
+    fs.writeFileSync(`${buildDestDir}/${betaFlag ? "beta/" : ""}/assetOverrides.json`, JSON.stringify(assetMappings));
 
     const baseURL_ = baseURL.endsWith("/") ? baseURL : `${baseURL}/`;
 
@@ -311,7 +308,6 @@ async function createRollupConfig(baseURL, modInfo, rollupSetting, utilDir, beta
         __mod_version__: `"${versionString}"`,
         __mod_beta_flag__: `${!!betaFlag}`,
         __mod_repo__: modInfo.repo ? `"${modInfo.repo}"` : "undefined",
-        __mod_asset_overrides__: `"${assetMapping}"`,
         __mod_base_url__: `"${baseURL}"`,
         __mod_resource_base_url__: `"${baseURL_}${betaFlag ? "beta/" : ""}"`,
         __mod_rollup_imports__: componentsImports.imports,

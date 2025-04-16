@@ -6,12 +6,11 @@ export const ModInfo = {
     repository: __mod_repo__,
 };
 
-/** @type { AssetOverrideContainer } */
-export const assetOverrides = JSON.parse(LZString.decompressFromBase64(__mod_asset_overrides__));
-
 export const baseURL = __mod_base_url__;
 
 export const resourceBaseURL = __mod_resource_base_url__;
+
+export const assetOverridesURL = `${resourceBaseURL}/assetOverrides.json`;
 
 export const betaFlag = __mod_beta_flag__;
 
