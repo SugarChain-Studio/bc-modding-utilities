@@ -71,17 +71,15 @@ function collectComponents(componentsDir, baseDir, importStartDir) {
 /**
  * 从package.json中构建rollup设置
  * @param {Object} packageObj 通过require()加载的package.json对象
- * @param {boolean} debugFlag 是否为debug模式
- * @param {boolean} betaFlag 是否为beta模式
- * @returns { { input: string, output: string, loaderName: string, author: string, description:string, componentDir: string, assets: { location: string, assets: string[] }, debug: boolean } }
+ * @param {ReturnType<typeof parseEnv>} env 环境参数
+ * @returns { { input: string, output: string, loaderName: string, author: string, description:string, componentDir: string, assets: { location: string, assets: string[] }} }
  */
-function buildRollupSetting(packageObj, debugFlag, betaFlag) {
+function buildRollupSetting(packageObj, env) {
     const ret = { ...packageObj.rollupSetting };
-    if (betaFlag) {
+    if (env.beta) {
         ret.output = packageObj.rollupSetting.beta.output ?? ret.output;
         ret.loaderName = packageObj.rollupSetting.beta.loaderName ?? ret.loaderName;
     }
-    ret.debug = !!debugFlag;
     ret.author = packageObj.author;
     ret.description = packageObj.description;
     return ret;
@@ -254,95 +252,96 @@ function buildModInfo(packageObj) {
 /**
  * 创建用于 @rollup/plugin-replace 的替换记录
  * @param { object } param0
+ * @param { ReturnType<typeof parseEnv> } param0.env 环境参数
  * @param { string } param0.baseURL 部署的基础URL
  * @param { ReturnType<typeof buildModInfo> } param0.modInfo 从pacakge.json获取的mod信息, 参考 {@link buildModInfo}
  * @param { ReturnType<typeof buildRollupSetting> } param0.rollupSetting 从pacakge.json获取的rollup设置, 参考 {@link buildRollupSetting}
  * @param { string } param0.curDir 当前目录
  * @param { boolean } [param0.beta] 是否为beta模式
  */
-async function createReplaceRecord({ baseURL, modInfo, rollupSetting, curDirRelative, beta = false }) {
+async function createReplaceRecord({ env, modInfo, rollupSetting }) {
     const componentsImports = rollupSetting.componentDir
-        ? collectComponents(rollupSetting.componentDir, curDirRelative, rollupSetting.componentDir)
+        ? collectComponents(rollupSetting.componentDir, env.curDir, rollupSetting.componentDir)
         : { imports: "", setups: "" };
 
-    const baseURL_ = baseURL.endsWith("/") ? baseURL : `${baseURL}/`;
-
-    const betaString = beta ? "-beta" : "";
+    const betaString = env.beta ? "-beta" : "";
 
     const versionString = (() => {
-        if (beta && !modInfo.version.includes("beta")) return `${modInfo.version}-beta`;
+        if (env.beta && !modInfo.version.includes("beta")) return `${modInfo.version}-beta`;
         return modInfo.version;
     })();
 
     return {
-        __base_url__: `${baseURL.endsWith("/") ? baseURL.substring(0, baseURL.length - 1) : baseURL}`,
-        __description__: rollupSetting.description,
-        __name__: `${modInfo.name}${betaString}`,
-        __author__: rollupSetting.author,
-        __script_file__: rollupSetting.output,
-
-        __mod_name__: `"${modInfo.name}"`,
-        __mod_full_name__: `"${modInfo.fullName}${betaString}"`,
-        __mod_version__: `"${versionString}"`,
-        __mod_beta_flag__: `${!!beta}`,
-        __mod_repo__: modInfo.repo ? `"${modInfo.repo}"` : "undefined",
-        __mod_base_url__: `"${baseURL}"`,
-        __mod_resource_base_url__: `"${baseURL_}${beta ? "beta/" : ""}"`,
-        __mod_rollup_imports__: componentsImports.imports,
-        __mod_rollup_setup__: componentsImports.setups,
-        __mod_debug_flag__: `${rollupSetting.debug}`,
+        loaderReplace: {
+            __base_url__: `${
+                env.baseURL.endsWith("/") ? env.baseURL.substring(0, env.baseURL.length - 1) : env.baseURL
+            }`,
+            __description__: rollupSetting.description,
+            __name__: `${modInfo.name}${betaString}`,
+            __author__: rollupSetting.author,
+            __script_file__: rollupSetting.output,
+        },
+        scriptReplace: {
+            __mod_name__: `"${modInfo.name}"`,
+            __mod_full_name__: `"${modInfo.fullName}${betaString}"`,
+            __mod_version__: `"${versionString}"`,
+            __mod_beta_flag__: `${!!env.beta}`,
+            __mod_repo__: modInfo.repo ? `"${modInfo.repo}"` : "undefined",
+            __mod_base_url__: `"${env.baseURL}"`,
+            __mod_resource_base_url__: `"${env.baseURL}${env.beta ? "beta/" : ""}"`,
+            __mod_rollup_imports__: componentsImports.imports,
+            __mod_rollup_setup__: componentsImports.setups,
+            __mod_debug_flag__: `${rollupSetting.debug}`,
+        },
     };
 }
 
 /**
  * 写入资源映射文件
  * @param {object} param0
- * @param {string} param0.destDir 构建目标目录
+ * @param { ReturnType<typeof parseEnv> } param0.env 环境参数
  * @param {object} param0.rollupSetting rollup设置
- * @param {boolean} [param0.beta] 是否为beta模式
  */
-async function writeAssetOverrides({ destDir, rollupSetting, beta = false }) {
+async function writeAssetOverrides({ env, rollupSetting }) {
     const assetMappings = await readAssetsMapping(rollupSetting.assets.location, rollupSetting.assets.assets);
-    fs.writeFileSync(`${destDir}/${beta ? "beta/" : ""}/assetOverrides.json`, JSON.stringify(assetMappings));
+    fs.writeFileSync(`${env.destDir}/${env.beta ? "beta/" : ""}/assetOverrides.json`, JSON.stringify(assetMappings));
 }
 
 /**
  * 创建构建插件的rollup配置
  * @param { object } param0
+ * @param { ReturnType<typeof parseEnv> } param0.env 环境参数
  * @param { object } param0.packageJSON package.json对象
- * @param { string } param0.curDir 当前目录
  * @param { string } param0.destDir 构建目标目录
  * @param { string } param0.utilDir 工具目录
  * @param { string } param0.baseURL 部署的基础URL
  * @param { boolean } [param0.beta] 是否为beta模式
  * @param { boolean } [param0.debug] 是否为debug模式
  */
-async function createModRollupConfig({ packageJSON, curDir, destDir, utilDir, baseURL, beta = false, debug = false }) {
+async function createModRollupConfig({ env, packageJSON }) {
     const modInfo = buildModInfo(packageJSON);
-    const rollupSetting = buildRollupSetting(packageJSON, debug, beta);
+    const rollupSetting = buildRollupSetting(packageJSON, env);
 
     const log = (msg) => {
         console.info(`[${modInfo.name}] ${msg}`);
     };
 
-    const baseURL_ = baseURL.endsWith("/") ? baseURL : `${baseURL}/`;
-
-    if (debug) log("Debug mode enabled");
-    log(`Deploying to ${baseURL_}`);
+    if (env.debug) log("Debug mode enabled");
+    log(`Deploying to ${env.baseURL}`);
     log(`Build time: ${new Date().toLocaleString("zh-CN", { hour12: false })}`);
     log(`Artifact version: ${modInfo.version}`);
 
-    const curDirRelative = relativePath(".", curDir);
+    const curDirRelative = relativePath(".", env.curDir);
 
-    log(`Current directory: ${curDir}`);
-    log(`Destination directory: ${destDir}`);
+    log(`Current directory: ${env.curDir}`);
+    log(`Destination directory: ${env.destDir}`);
 
     const config = defineConfig({
-        input: `${curDir}/${rollupSetting.input}`,
+        input: `${env.curDir}/${rollupSetting.input}`,
         output: {
-            file: `${destDir}/${rollupSetting.output}`,
+            file: `${env.destDir}/${rollupSetting.output}`,
             format: "iife",
-            sourcemap: rollupSetting.debug ? "inline" : true,
+            sourcemap: env.debug ? "inline" : true,
             banner: ``,
         },
         treeshake: true,
@@ -350,17 +349,14 @@ async function createModRollupConfig({ packageJSON, curDir, destDir, utilDir, ba
     });
 
     await writeAssetOverrides({
-        destDir,
+        env,
         rollupSetting,
-        beta,
     });
 
-    const loader_replaces = await createReplaceRecord({
-        baseURL,
+    const { loaderReplace, scriptReplace } = await createReplaceRecord({
+        env,
         modInfo,
         rollupSetting,
-        curDirRelative,
-        beta,
     });
 
     return defineConfig({
@@ -369,11 +365,11 @@ async function createModRollupConfig({ packageJSON, curDir, destDir, utilDir, ba
             copy({
                 targets: [
                     {
-                        src: `${curDirRelative}/${utilDir}/loader.template.user.js`,
-                        dest: destDir,
+                        src: `${env.curDir}/${env.utilDir}/loader.template.user.js`.replace(/\\/g, "/"),
+                        dest: env.destDir,
                         rename: rollupSetting.loaderName,
                         transform: (contents) =>
-                            Object.entries(loader_replaces).reduce(
+                            Object.entries(loaderReplace).reduce(
                                 (pv, [from, to]) => pv.replace(from, to),
                                 contents.toString()
                             ),
@@ -381,20 +377,41 @@ async function createModRollupConfig({ packageJSON, curDir, destDir, utilDir, ba
                 ],
             }),
             replace({
-                ...loader_replaces,
+                ...scriptReplace,
                 preventAssignment: false,
             }),
             alias({
                 entries: {
-                    "@mod-utils": `${curDir}/${utilDir}/src`,
+                    "@mod-utils": `${env.curDir}/${env.utilDir}/src`,
                 },
             }),
             commonjs(),
             resolve({ browser: true }),
             css({ inject: true }),
-            ...(rollupSetting.debug ? [] : [terser({ sourceMap: true })]),
+            ...(env.debug ? [] : [terser({ sourceMap: true })]),
         ],
     });
+}
+
+/**
+ * 处理环境相关的配置
+ * @param {string} curDir
+ * @param {any} cliArgs
+ */
+function parseEnv(curDir, cliArgs) {
+    let baseURL = cliArgs.configBaseURL;
+    if (typeof baseURL !== "string") {
+        throw new Error("No deploy site specified");
+    }
+
+    return {
+        curDir,
+        destDir: `${curDir}/public/`,
+        utilDir: /** @type {string} */ (cliArgs.configUtilsDir || "utils"),
+        baseURL: baseURL.endsWith("/") ? baseURL : `${baseURL}/`,
+        debug: !!cliArgs.configDebug,
+        beta: !!cliArgs.configBeta,
+    };
 }
 
 module.exports = {
@@ -407,4 +424,5 @@ module.exports = {
     createReplaceRecord,
     writeAssetOverrides,
     createModRollupConfig,
+    parseEnv,
 };
