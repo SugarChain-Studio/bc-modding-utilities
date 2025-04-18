@@ -13,6 +13,7 @@ declare const __mod_rollup_setup__: string[];
 /** 扩展的身体组（非物品）名称 */
 type CustomGroupBodyName =
     | AssetGroupBodyName
+    | `Luzi_${AssetGroupBodyName}_${number}`
     | `${AssetGroupBodyName}_笨笨蛋Luzi`
     | `${AssetGroupBodyName}_笨笨笨蛋Luzi2`
     | 'Liquid2_Luzi'
