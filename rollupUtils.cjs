@@ -312,11 +312,6 @@ async function writeAssetOverrides({ env, rollupSetting }) {
  * @param { object } param0
  * @param { ReturnType<typeof parseEnv> } param0.env 环境参数
  * @param { object } param0.packageJSON package.json对象
- * @param { string } param0.destDir 构建目标目录
- * @param { string } param0.utilDir 工具目录
- * @param { string } param0.baseURL 部署的基础URL
- * @param { boolean } [param0.beta] 是否为beta模式
- * @param { boolean } [param0.debug] 是否为debug模式
  */
 async function createModRollupConfig({ env, packageJSON }) {
     const modInfo = buildModInfo(packageJSON);
@@ -330,9 +325,6 @@ async function createModRollupConfig({ env, packageJSON }) {
     log(`Deploying to ${env.baseURL}`);
     log(`Build time: ${new Date().toLocaleString("zh-CN", { hour12: false })}`);
     log(`Artifact version: ${modInfo.version}`);
-
-    const curDirRelative = relativePath(".", env.curDir);
-
     log(`Current directory: ${env.curDir}`);
     log(`Destination directory: ${env.destDir}`);
 
