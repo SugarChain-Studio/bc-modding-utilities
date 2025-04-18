@@ -291,7 +291,7 @@ async function createReplaceRecord({ env, modInfo, rollupSetting }) {
             __mod_resource_base_url__: `"${env.baseURL}${env.beta ? "beta/" : ""}"`,
             __mod_rollup_imports__: componentsImports.imports,
             __mod_rollup_setup__: componentsImports.setups,
-            __mod_debug_flag__: `${rollupSetting.debug}`,
+            __mod_debug_flag__: `${env.debug}`,
         },
     };
 }
