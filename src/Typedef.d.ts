@@ -33,6 +33,7 @@ type CustomGroupName = import('@sugarch/bc-mod-types').CustomGroupName<CustomGro
 declare namespace Translation {
     type Entry = import('@sugarch/bc-mod-types').Translation.Entry;
     type Dialog = import('@sugarch/bc-mod-types').Translation.Dialog;
+    type String = import('@sugarch/bc-mod-types').Translation.String;
     type ActivityEntry = import('@sugarch/bc-mod-types').Translation.ActivityEntry;
     type GroupedEntries = import('@sugarch/bc-mod-types').Translation.GroupedEntries<CustomGroupBodyName>;
     type CustomRecord<T extends string, U> = import('@sugarch/bc-mod-types').Translation.CustomRecord<T, U>;
