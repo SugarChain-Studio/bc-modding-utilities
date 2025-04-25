@@ -148,4 +148,18 @@ export class DialogTools {
         }
         return result;
     }
+
+    /**
+     * 提供键，从 语言-键-文本 中挑选出对应的 语言-文本
+     * @param {Translation.String} translation
+     * @param {string} key
+     * @returns {Translation.Entry}
+     */
+    static pickEntry(translation, key) {
+        const ret = {};
+        for (const lang in translation) {
+            ret[lang] = translation[lang][key] || key;
+        }
+        return ret;
+    }
 }
