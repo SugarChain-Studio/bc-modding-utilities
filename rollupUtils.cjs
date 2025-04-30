@@ -225,9 +225,15 @@ async function readAssetsMapping(startDir, assetDirs) {
     return assets;
 }
 
-function getLatestSemverTag() {
-    const ret = execSync("git describe --tags --abbrev=0").toString().trim();
-    return ret.startsWith("v") ? ret.substring(1) : ret;
+function getLatestSemverTag(packageObj) {
+    try {
+        const ret = execSync("git describe --tags --abbrev=0").toString().trim();
+        return ret.startsWith("v") ? ret.substring(1) : ret;
+    } catch (e) {
+        if (packageObj.version) return packageObj.version;
+        console.warn("[WARN] No git tag found, nor version in package.json, using v0.0.0 as version");
+        return "0.0.0";
+    }
 }
 
 /**
@@ -239,7 +245,7 @@ function buildModInfo(packageObj) {
     return {
         name: `${packageObj.displayName}`,
         fullName: `${packageObj.modFullName}`,
-        version: getLatestSemverTag(),
+        version: getLatestSemverTag(packageObj),
         repo: (() => {
             if (!packageObj.repository || !packageObj.repository.url) return undefined;
             if (packageObj.repository.url.startsWith("git+"))
