@@ -294,7 +294,7 @@ async function createReplaceRecord({ env, modInfo, rollupSetting }) {
             __mod_beta_flag__: `${!!env.beta}`,
             __mod_repo__: modInfo.repo ? `"${modInfo.repo}"` : "undefined",
             __mod_base_url__: `"${env.baseURL}"`,
-            __mod_resource_base_url__: `"${env.baseURL}${env.beta ? "beta/" : ""}"`,
+            __mod_resource_base_url__: `"${env.resourceURL}"`,
             __mod_rollup_imports__: componentsImports.imports,
             __mod_rollup_setup__: componentsImports.setups,
             __mod_debug_flag__: `${env.debug}`,
@@ -310,7 +310,8 @@ async function createReplaceRecord({ env, modInfo, rollupSetting }) {
  */
 async function writeAssetOverrides({ env, rollupSetting }) {
     const assetMappings = await readAssetsMapping(rollupSetting.assets.location, rollupSetting.assets.assets);
-    fs.writeFileSync(`${env.destDir}/${env.beta ? "beta/" : ""}/assetOverrides.json`, JSON.stringify(assetMappings));
+    if (!fs.existsSync(env.resourceDir)) fs.mkdirSync(env.resourceDir, { recursive: true });
+    fs.writeFileSync(`${env.resourceDir}assetOverrides.json`, JSON.stringify(assetMappings));
 }
 
 /**
@@ -363,7 +364,7 @@ async function createModRollupConfig({ env, packageJSON }) {
             copy({
                 targets: [
                     {
-                        src: `${env.curDir}/${env.utilDir}/loader.template.user.js`.replace(/\\/g, "/"),
+                        src: `${env.curDir}/${env.utilDir}/loader.template.user.js`,
                         dest: env.destDir,
                         rename: rollupSetting.loaderName,
                         transform: (contents) =>
@@ -402,11 +403,17 @@ function parseEnv(curDir, cliArgs) {
         throw new Error("No deploy site specified");
     }
 
+    baseURL = baseURL.endsWith("/") ? baseURL : `${baseURL}/`;
+    const beta = !!cliArgs.configBeta;
+    const curDir_ = path.resolve(curDir).replace(/\\/g, "/");
+
     return {
-        curDir,
-        destDir: `${curDir}/public/`,
+        curDir: curDir_,
+        destDir: `${curDir_}/public/`,
+        resourceDir: `${curDir_}/public/${beta ? "beta/" : ""}`,
         utilDir: /** @type {string} */ (cliArgs.configUtilsDir || "utils"),
-        baseURL: baseURL.endsWith("/") ? baseURL : `${baseURL}/`,
+        baseURL,
+        resourceURL: `${baseURL}${beta ? "beta/" : ""}`,
         debug: !!cliArgs.configDebug,
         beta: !!cliArgs.configBeta,
     };
