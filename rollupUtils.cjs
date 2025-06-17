@@ -319,8 +319,9 @@ async function writeAssetOverrides({ env, rollupSetting }) {
  * @param { object } param0
  * @param { ReturnType<typeof parseEnv> } param0.env 环境参数
  * @param { object } param0.packageJSON package.json对象
+ * @param { string } [param0.banner] 可选的banner字符串
  */
-async function createModRollupConfig({ env, packageJSON }) {
+async function createModRollupConfig({ env, packageJSON, banner = "" }) {
     const modInfo = buildModInfo(packageJSON);
     const rollupSetting = buildRollupSetting(packageJSON, env);
 
@@ -341,7 +342,7 @@ async function createModRollupConfig({ env, packageJSON }) {
             file: `${env.destDir}/${rollupSetting.output}`,
             format: "iife",
             sourcemap: env.debug ? "inline" : true,
-            banner: ``,
+            banner,
         },
         treeshake: true,
         external: ["https://cdn.jsdelivr.net/npm/sweetalert2@11.6.13/+esm"],
