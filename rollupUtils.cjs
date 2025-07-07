@@ -57,9 +57,13 @@ function collectComponents(componentsDir, baseDir, importStartDir) {
         return files;
     })(compDir);
 
+    const prefix = `A${Math.random().toString(36).substring(2, 8)}`;
+    let counter = 0;
+
     files.forEach((file) => {
-        imports.push(`import ${file.name} from "${file.path}";`);
-        setups.push(`${file.name}();`);
+        const name = `${prefix}${counter++}`;
+        imports.push(`import ${name} from "${file.path}";`);
+        setups.push(`${name}();`);
     });
 
     imports = imports.join("\n");
