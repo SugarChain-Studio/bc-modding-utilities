@@ -45,17 +45,6 @@ declare function ServerSend<T extends keyof ClientToServerEvents>(
     Message: T,
     ...args: Parameters<ClientToServerEvents[T]>
 ): void;
-
-interface XCharacterDrawOrderState {
-    prevCharacter?: number;
-    nextCharacter?: number;
-    associatedAsset?: { group: AssetGroupItemName; asset: string };
-    associatedPose?: { pose: AssetPoseName[] };
-    drawState?: { X: number; Y: number; Zoom: number };
-}
-
-type XCharacter = { XCharacterDrawOrder?: XCharacterDrawOrderState } & Character;
-
 type DrawFunParameters<T extends (...args: any[]) => any> = T extends (
     X: number,
     Y: number,
