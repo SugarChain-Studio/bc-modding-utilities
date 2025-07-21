@@ -1,27 +1,33 @@
-interface XCharacterDrawOrderState {
-    prevCharacter?: number;
-    nextCharacter?: number;
-    associatedAsset?: { group: AssetGroupItemName; asset: string };
-    associatedPose?: { pose: AssetPoseName[] };
-    drawState?: { X: number; Y: number; Zoom: number };
-}
-
-interface XCharacterDrawOrderBase {
+type PrevXCharacterState = {
     prevCharacter: number;
+};
+
+type NextXCharacterState = {
     nextCharacter: number;
+};
+
+type PrevOrNextXCharacter = PrevXCharacterState | NextXCharacterState;
+
+interface XCharacterDrawOrderBase extends PrevOrNextXCharacter {
     drawState?: { X: number; Y: number; Zoom: number };
 }
-
-interface XCharacterDrawOrderWithAsset extends XCharacterDrawOrderBase {
+interface XCharacterDrawOrderAssetState extends XCharacterDrawOrderBase {
     associatedAsset: { group: AssetGroupItemName; asset: string };
 }
 
-interface XCharacterDrawOrderWithPose extends XCharacterDrawOrderBase {
+interface XCharacterDrawOrderPoseState extends XCharacterDrawOrderBase {
     associatedPose: { pose: AssetPoseName[] };
 }
 
-interface XCharacterDrawOrderWithTimer extends XCharacterDrawOrderBase {
+interface XCharacterDrawOrderTimerState extends XCharacterDrawOrderBase {
     timer: number;
 }
 
-type XCharacter = { XCharacterDrawOrder?: XCharacterDrawOrderState } & Character;
+type XCharacterDrawOrderState =
+    | XCharacterDrawOrderAssetState
+    | XCharacterDrawOrderPoseState
+    | XCharacterDrawOrderTimerState;
+
+type XCharacter = {
+    XCharacterDrawOrder?: XCharacterDrawOrderState;
+} & Character;

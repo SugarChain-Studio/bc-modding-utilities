@@ -1,33 +1,6 @@
 import { HookManager } from "@sugarch/bc-mod-hook-manager";
-import { setXDrawState } from "./sync";
-
-/**
- * @param {XCharacter} C
- */
-function validAssociated(C) {
-    const { associatedAsset, associatedPose } = C.XCharacterDrawOrder;
-    const ret = (() => {
-        if (associatedAsset && !InventoryIsItemInList(C, associatedAsset.group, [associatedAsset.asset])) return false;
-        if (associatedPose && !associatedPose.pose.every((p) => C.ActivePose.includes(p))) return false;
-        return true;
-    })();
-
-    if (!ret && C.IsPlayer()) setXDrawState({});
-    return ret;
-}
-
-/**
- * @param {XCharacter} C
- * @returns {boolean} 如果是需要特殊处理的角色返回true
- */
-function validXCharacter(C) {
-    if (!C || !C.XCharacterDrawOrder) return false;
-    const { prevCharacter, nextCharacter } = C.XCharacterDrawOrder;
-    if (!prevCharacter && !nextCharacter) return false;
-    if (prevCharacter === C.MemberNumber || nextCharacter === C.MemberNumber) return false;
-    if (!validAssociated(C)) return false;
-    return true;
-}
+import { clearXDrawState, setXDrawState } from "./sync";
+import { branchXCharacter, Pick, Test } from "./checks";
 
 /**
  *
@@ -36,20 +9,35 @@ function validXCharacter(C) {
  * @returns { { prev: XCharacter, next: XCharacter } | undefined }
  */
 export function findDrawOrderPair(C, characters) {
-    if (!C || !validXCharacter(C)) return undefined;
-    const { prevCharacter, nextCharacter } = C.XCharacterDrawOrder;
-    if (prevCharacter) {
-        const other = characters.find((c) => c.MemberNumber === prevCharacter);
-        if (other && validXCharacter(other) && other.XCharacterDrawOrder.nextCharacter === C.MemberNumber)
-            return { prev: other, next: C };
-        return undefined;
-    } else if (nextCharacter) {
-        const other = characters.find((c) => c.MemberNumber === nextCharacter);
-        if (other && validXCharacter(other) && other.XCharacterDrawOrder.prevCharacter === C.MemberNumber)
-            return { prev: C, next: other };
-        return undefined;
-    }
-    return undefined;
+    return branchXCharacter(
+        C,
+        (other, state) => {
+            const otherC = characters.find((c) => c.MemberNumber === other);
+            if (!Test.testDrawState(C, state)) {
+                if (C.IsPlayer()) clearXDrawState();
+                return undefined;
+            }
+
+            const otherNum = Pick.next(otherC);
+            if (otherNum && otherNum !== C.MemberNumber) {
+                return { prev: otherC, next: C };
+            }
+            return undefined;
+        },
+        (other, state) => {
+            const otherC = characters.find((c) => c.MemberNumber === other);
+            if (!Test.testDrawState(C, state)) {
+                if (C.IsPlayer()) clearXDrawState();
+                return undefined;
+            }
+
+            const otherNum = Pick.prev(otherC);
+            if (otherNum && otherNum !== C.MemberNumber) {
+                return { prev: C, next: otherC };
+            }
+            return undefined;
+        }
+    );
 }
 
 export class XCharacterDrawlist {
@@ -64,7 +52,9 @@ export class XCharacterDrawlist {
 
         if (!Array.isArray(drawlist)) return;
 
-        const mMap = new Map(Array.from(drawlist, (c, idx) => [c.MemberNumber, idx]));
+        const mMap = new Map(
+            Array.from(drawlist, (c, idx) => [c.MemberNumber, idx])
+        );
 
         let cList = Array.from(drawlist, (_, idx) => idx);
         /** @type {number[]} */
@@ -74,7 +64,9 @@ export class XCharacterDrawlist {
             const c = drawlist[cIdx];
             const result = findDrawOrderPair(c, drawlist);
             if (result) {
-                const idxes = Object.values(result).map((c) => mMap.get(c.MemberNumber));
+                const idxes = Object.values(result).map((c) =>
+                    mMap.get(c.MemberNumber)
+                );
                 pList.push(...idxes);
                 cList = cList.filter((idx) => !idxes.includes(idx));
                 continue;
@@ -99,11 +91,15 @@ export class XCharacterDrawlist {
 }
 
 export function setupXCharacterDrawlist() {
-    const func = HookManager.randomGlobalFunction("CreateX", () => new XCharacterDrawlist(ChatRoomCharacterDrawlist));
+    const func = HookManager.randomGlobalFunction(
+        "CreateX",
+        () => new XCharacterDrawlist(ChatRoomCharacterDrawlist)
+    );
 
     HookManager.patchFunction("ChatRoomCharacterViewLoopCharacters", {
         "for (let C = 0; C < ChatRoomCharacterDrawlist.length; C++) {": `const XDraws = ${func}(); for (let C = 0; C < ChatRoomCharacterDrawlist.length; C++) { const CN = XDraws.next();`,
-        "!ChatRoomCharacterDrawlist[C].IsPlayer()": "!ChatRoomCharacterDrawlist[CN].IsPlayer()",
+        "!ChatRoomCharacterDrawlist[C].IsPlayer()":
+            "!ChatRoomCharacterDrawlist[CN].IsPlayer()",
         "const res = callback(C, CharX, CharY, Space, Zoom);":
             "const res = callback(C, CharX, CharY, Space, Zoom, CN);",
     });
