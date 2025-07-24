@@ -76,7 +76,11 @@ export function isTimerState(state) {
  */
 export function pickCharacterNext(c) {
     const dobj = /** @type {any} */ (c)?.XCharacterDrawOrder;
-    if (!isDrawOrderState(dobj) && typeof dobj.nextCharacter !== "number")
+    if (
+        !dobj ||
+        !isDrawOrderState(dobj) ||
+        typeof dobj.nextCharacter !== "number"
+    )
         return undefined;
     return dobj.nextCharacter;
 }
@@ -89,7 +93,11 @@ export function pickCharacterNext(c) {
  */
 export function pickCharacterPrev(c) {
     const dobj = /** @type {any} */ (c)?.XCharacterDrawOrder;
-    if (!isDrawOrderState(dobj) && typeof dobj.prevCharacter !== "number")
+    if (
+        !dobj ||
+        !isDrawOrderState(dobj) ||
+        typeof dobj.prevCharacter !== "number"
+    )
         return undefined;
     return dobj.prevCharacter;
 }
@@ -169,7 +177,7 @@ export function testPoseState(C, state) {
  */
 export function testTimerState(C, state) {
     if (typeof state.timer !== "number") return false;
-    return state.timer <= Date.now();
+    return state.timer >= Date.now();
 }
 
 /**

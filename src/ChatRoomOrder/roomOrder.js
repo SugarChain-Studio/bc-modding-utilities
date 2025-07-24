@@ -1,3 +1,4 @@
+import { isAssetState, isTimerState } from "./checks";
 import { clearXDrawState, setupSync, setXDrawState } from "./sync";
 import {
     findDrawOrderPair,
@@ -39,6 +40,26 @@ export class ChatRoomOrder {
      */
     static findPair(C) {
         return findDrawOrderPair(C, ChatRoomCharacterDrawlist);
+    }
+
+    /**
+     * @param {XCharacter} C
+     * @return {XCharacterDrawOrderAssetState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
+     */
+    static requireAssetState(C) {
+        const state = C.XCharacterDrawOrder;
+        if (isAssetState(state)) return state;
+        return undefined;
+    }
+
+    /**
+     * @param {XCharacter} C
+     * @return {XCharacterDrawOrderTimerState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
+     */
+    static requireTimerState(C) {
+        const state = C.XCharacterDrawOrder;
+        if (isTimerState(state)) return state;
+        return undefined;
     }
 
     /**

@@ -75,7 +75,8 @@ export function setupSync() {
                 target.XCharacterDrawOrder = validDrawOrderState(
                     /** @type {unknown}*/ (Dictionary[0])
                 );
-                if (drawState) target.XCharacterDrawOrder.drawState = drawState;
+                if (target.XCharacterDrawOrder && drawState)
+                    target.XCharacterDrawOrder.drawState = drawState;
             }
             return;
         }

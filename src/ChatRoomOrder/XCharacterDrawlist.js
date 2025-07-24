@@ -1,5 +1,5 @@
 import { HookManager } from "@sugarch/bc-mod-hook-manager";
-import { clearXDrawState, setXDrawState } from "./sync";
+import { clearXDrawState } from "./sync";
 import { branchXCharacter, isXCharacter, Pick, Test } from "./checks";
 
 /**
@@ -12,27 +12,29 @@ export function findDrawOrderPair(C, characters) {
     return branchXCharacter(
         C,
         (other, state) => {
-            const otherC = characters.find((c) => c.MemberNumber === other);
             if (!Test.testDrawState(C, state)) {
                 if (C.IsPlayer()) clearXDrawState();
                 return undefined;
             }
 
+            const otherC = characters.find((c) => c.MemberNumber === other);
+            if (!otherC) return undefined;
             const otherNum = Pick.next(otherC);
-            if (otherNum && otherNum !== C.MemberNumber) {
+            if (otherNum) {
                 return { prev: otherC, next: C };
             }
             return undefined;
         },
         (other, state) => {
-            const otherC = characters.find((c) => c.MemberNumber === other);
             if (!Test.testDrawState(C, state)) {
                 if (C.IsPlayer()) clearXDrawState();
                 return undefined;
             }
 
+            const otherC = characters.find((c) => c.MemberNumber === other);
+            if (!otherC) return undefined;
             const otherNum = Pick.prev(otherC);
-            if (otherNum && otherNum !== C.MemberNumber) {
+            if (otherNum) {
                 return { prev: C, next: otherC };
             }
             return undefined;
