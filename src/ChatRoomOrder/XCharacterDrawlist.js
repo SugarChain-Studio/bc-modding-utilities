@@ -1,6 +1,6 @@
 import { HookManager } from "@sugarch/bc-mod-hook-manager";
 import { clearXDrawState, setXDrawState } from "./sync";
-import { branchXCharacter, Pick, Test } from "./checks";
+import { branchXCharacter, isXCharacter, Pick, Test } from "./checks";
 
 /**
  *
@@ -91,6 +91,36 @@ export class XCharacterDrawlist {
 }
 
 export function setupXCharacterDrawlist() {
+    HookManager.hookFunction("ChatRoomUpdateDisplay", 10, (args, next) => {
+        next(args);
+
+        /** @type {Set<number>} */
+        const characters = new Set(
+            ChatRoomCharacterDrawlist.map((c) => c.MemberNumber)
+        );
+
+        for (const C of ChatRoomCharacterDrawlist) {
+            if (isXCharacter(C)) {
+                const pair = findDrawOrderPair(C, ChatRoomCharacter);
+                if (pair) {
+                    characters.add(pair.prev.MemberNumber);
+                    characters.add(pair.next.MemberNumber);
+                }
+            }
+        }
+
+        ChatRoomCharacterDrawlist = ChatRoomCharacter.filter((c) =>
+            characters.has(c.MemberNumber)
+        );
+    });
+
+    HookManager.progressiveHook("PreferenceArousalAtLeast")
+        .inside("ChatRoomCharacterViewClickCharacter")
+        .override((args, next) => {
+            if (isXCharacter(args[0])) return false;
+            return next(args);
+        });
+
     const func = HookManager.randomGlobalFunction(
         "CreateX",
         () => new XCharacterDrawlist(ChatRoomCharacterDrawlist)

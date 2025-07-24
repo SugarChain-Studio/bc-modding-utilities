@@ -1,5 +1,8 @@
-import { setupSync, setXDrawState } from "./sync";
-import { findDrawOrderPair, setupXCharacterDrawlist } from "./XCharacterDrawlist";
+import { clearXDrawState, setupSync, setXDrawState } from "./sync";
+import {
+    findDrawOrderPair,
+    setupXCharacterDrawlist,
+} from "./XCharacterDrawlist";
 
 const setupKey = "MODChatRoomOrder";
 
@@ -16,7 +19,7 @@ export class ChatRoomOrder {
      * 清除当前玩家的配对绘制状态
      */
     static clearDrawOrder() {
-        setXDrawState({});
+        clearXDrawState();
     }
 
     /**
@@ -45,7 +48,11 @@ export class ChatRoomOrder {
      */
     static requirePairDrawState(C) {
         const ret = findDrawOrderPair(C, ChatRoomCharacterDrawlist);
-        if (!ret || !ret.prev.XCharacterDrawOrder.drawState || !ret.next.XCharacterDrawOrder.drawState)
+        if (
+            !ret ||
+            !ret.prev.XCharacterDrawOrder.drawState ||
+            !ret.next.XCharacterDrawOrder.drawState
+        )
             return undefined;
         return {
             prev: {
@@ -66,7 +73,11 @@ export class ChatRoomOrder {
      */
     static requireSharedCenter(C) {
         const pair = findDrawOrderPair(C, ChatRoomCharacterDrawlist);
-        if (!pair || !pair.prev.XCharacterDrawOrder.drawState || !pair.next.XCharacterDrawOrder.drawState)
+        if (
+            !pair ||
+            !pair.prev.XCharacterDrawOrder.drawState ||
+            !pair.next.XCharacterDrawOrder.drawState
+        )
             return undefined;
         const { prev, next } = {
             prev: pair.prev.XCharacterDrawOrder.drawState,
@@ -75,7 +86,8 @@ export class ChatRoomOrder {
 
         const center = (() => {
             // 如果两个人物的Y坐标差距大于300，说明两个人物不在同一水平线上，直接使用第二个人物为基准位置
-            if (Math.abs(prev.Y - next.Y) > 300) return { X: next.X, Y: next.Y };
+            if (Math.abs(prev.Y - next.Y) > 300)
+                return { X: next.X, Y: next.Y };
             // 取两个人物的中心点
             return { X: (prev.X + next.X) / 2, Y: (prev.Y + next.Y) / 2 };
         })();

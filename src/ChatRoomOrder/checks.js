@@ -1,7 +1,7 @@
 /**
  * 检查给定的角色是否是 XCharacter。
  * @param {Character | XCharacter} chara
- * @returns {Character is XCharacter}
+ * @returns {chara is XCharacter}
  */
 export function isXCharacter(chara) {
     const dobj = /** @type {any} */ (chara).XCharacterDrawOrder;
