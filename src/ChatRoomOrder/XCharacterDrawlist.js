@@ -136,10 +136,38 @@ export function setupXCharacterDrawlist() {
             "const res = callback(C, CharX, CharY, Space, Zoom, CN);",
     });
 
+    const func2 = HookManager.randomGlobalFunction(
+        "CheckX",
+        (characters, charsPerRow, drawIdx, idx) => {
+            if (drawIdx === 0) return [true, 0];
+
+            if (drawIdx === charsPerRow - 1) {
+                return [
+                    /** @type {any} */ (characters[idx])?.XCharacterDrawOrder
+                        ?.nextCharacter !== undefined,
+                    drawIdx + 1,
+                ];
+            }
+
+            if (drawIdx === charsPerRow) {
+                return [
+                    /** @type {any} */ (characters[idx])?.XCharacterDrawOrder
+                        ?.prevCharacter === undefined,
+                    drawIdx,
+                ];
+            }
+
+            return [false, drawIdx];
+        }
+    );
+
     HookManager.patchFunction("ChatRoomCharacterViewDraw", {
         "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, _space, roomZoom) => {":
             "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, _space, roomZoom, cIdx) => {",
         "ChatRoomCharacterDrawlist[charIdx]": "ChatRoomCharacterDrawlist[cIdx]",
+        "if (charIdx % charsPerRow === 0) {": `const [pflag, pidx] = ${func2}(ChatRoomCharacterDrawlist, charsPerRow, charIdx, cIdx); if (pflag) {`,
+        "RectMakeRect(0, Y + charIdx * 100, viewWidth, viewHeight * roomZoom);":
+            "RectMakeRect(0, Y + pidx * 100, viewWidth, viewHeight * roomZoom);",
     });
 
     HookManager.patchFunction("ChatRoomCharacterViewClick", {

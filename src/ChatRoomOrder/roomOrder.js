@@ -7,26 +7,26 @@ import {
 
 const setupKey = "MODChatRoomOrder";
 
-export class ChatRoomOrder {
+class ChatRoomOrder_ {
     /**
      * 设置当前玩家的配对绘制状态
      * @param {XCharacterDrawOrderState} state
      */
-    static setDrawOrder(state) {
+    setDrawOrder(state) {
         setXDrawState(state);
     }
 
     /**
      * 清除当前玩家的配对绘制状态
      */
-    static clearDrawOrder() {
+    clearDrawOrder() {
         clearXDrawState();
     }
 
     /**
      * 初始化配对绘制功能
      */
-    static setup() {
+    setup() {
         if (globalThis[setupKey]) return;
         globalThis[setupKey] = ChatRoomOrder;
         setupXCharacterDrawlist();
@@ -38,7 +38,7 @@ export class ChatRoomOrder {
      * @param { Character } C
      * @returns {{prev:XCharacter,next:XCharacter}}
      */
-    static findPair(C) {
+    findPair(C) {
         return findDrawOrderPair(C, ChatRoomCharacterDrawlist);
     }
 
@@ -46,7 +46,7 @@ export class ChatRoomOrder {
      * @param {XCharacter} C
      * @return {XCharacterDrawOrderAssetState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
      */
-    static requireAssetState(C) {
+    requireAssetState(C) {
         const state = C.XCharacterDrawOrder;
         if (isAssetState(state)) return state;
         return undefined;
@@ -56,7 +56,7 @@ export class ChatRoomOrder {
      * @param {XCharacter} C
      * @return {XCharacterDrawOrderTimerState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
      */
-    static requireTimerState(C) {
+    requireTimerState(C) {
         const state = C.XCharacterDrawOrder;
         if (isTimerState(state)) return state;
         return undefined;
@@ -67,7 +67,7 @@ export class ChatRoomOrder {
      * @param {Character} C
      * @returns {{prev:{C:Character,drawState:XCharacterDrawOrderState["drawState"]},next:{C:Character,drawState:XCharacterDrawOrderState["drawState"]}} | undefined} 如果没找到，返回undefined
      */
-    static requirePairDrawState(C) {
+    requirePairDrawState(C) {
         const ret = findDrawOrderPair(C, ChatRoomCharacterDrawlist);
         if (
             !ret ||
@@ -92,7 +92,7 @@ export class ChatRoomOrder {
      * @param {Character} C
      * @returns {{prev:XCharacter, next:XCharacter, center:{X:number,Y:number}} | undefined} 如果没找到，返回undefined
      */
-    static requireSharedCenter(C) {
+    requireSharedCenter(C) {
         const pair = findDrawOrderPair(C, ChatRoomCharacterDrawlist);
         if (
             !pair ||
@@ -116,3 +116,5 @@ export class ChatRoomOrder {
         return { ...pair, center };
     }
 }
+
+export const ChatRoomOrder = new ChatRoomOrder_();
