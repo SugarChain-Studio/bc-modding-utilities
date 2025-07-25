@@ -36,30 +36,32 @@ class ChatRoomOrder_ {
     /**
      * 查找一个人物的配对绘制对象
      * @param { Character } C
-     * @returns {{prev:XCharacter,next:XCharacter}}
+     * @returns { XCharaPair }
      */
     findPair(C) {
         return findDrawOrderPair(C, ChatRoomCharacterDrawlist);
     }
 
     /**
-     * @param {XCharacter} C
-     * @return {XCharacterDrawOrderAssetState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
+     * @param {XCharaPair} pair
+     * @return {XCharaPairAssetState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
      */
-    requireAssetState(C) {
-        const state = C.XCharacterDrawOrder;
-        if (isAssetState(state)) return state;
-        return undefined;
+    requirePairAssetState(pair) {
+        const prev = pair.prev.XCharacterDrawOrder;
+        const next = pair.next.XCharacterDrawOrder;
+        if (!isAssetState(prev) || !isAssetState(next)) return undefined;
+        return { prev, next };
     }
 
     /**
-     * @param {XCharacter} C
-     * @return {XCharacterDrawOrderTimerState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
+     * @param {XCharaPair} pair
+     * @return {XCharaPairTimerState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
      */
-    requireTimerState(C) {
-        const state = C.XCharacterDrawOrder;
-        if (isTimerState(state)) return state;
-        return undefined;
+    requirePairTimerState(pair) {
+        const prev = pair.prev.XCharacterDrawOrder;
+        const next = pair.next.XCharacterDrawOrder;
+        if (!isTimerState(prev) || !isTimerState(next)) return undefined;
+        return { prev, next };
     }
 
     /**

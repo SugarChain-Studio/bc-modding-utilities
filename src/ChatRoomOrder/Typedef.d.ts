@@ -38,3 +38,13 @@ type XCharacterDrawOrderState = PrevOrNextXCharacter &
 type XCharacter = {
     XCharacterDrawOrder?: XCharacterDrawOrderState;
 } & Character;
+
+interface CharaPair<T> {
+    prev: T;
+    next: T;
+}
+
+type XCharaPair = CharaPair<XCharacter>;
+type XCharaPairAssetState = CharaPair<XCharacterDrawOrderAssetState>;
+type XCharaPairPoseState = CharaPair<XCharacterDrawOrderPoseState>;
+type XCharaPairTimerState = CharaPair<XCharacterDrawOrderTimerState>;

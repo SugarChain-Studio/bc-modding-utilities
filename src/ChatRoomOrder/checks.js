@@ -150,12 +150,11 @@ export const Validations = {
  * @param {XCharacterDrawOrderAssetState} state
  */
 export function testAssetState(C, state) {
-    return C.Appearance.some((item) => {
-        return (
+    return C.Appearance.some(
+        (item) =>
             item.Asset.Group.Name === state.associatedAsset.group &&
             item.Asset.Name === state.associatedAsset.asset
-        );
-    });
+    );
 }
 
 /**
@@ -164,9 +163,9 @@ export function testAssetState(C, state) {
  * @param {XCharacterDrawOrderPoseState} state
  */
 export function testPoseState(C, state) {
-    return C.ActivePose.some((pose) => {
-        return state.associatedPose.pose.includes(pose);
-    });
+    return C.ActivePose.some((pose) =>
+        state.associatedPose.pose.includes(pose)
+    );
 }
 
 /**

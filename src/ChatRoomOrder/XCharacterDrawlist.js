@@ -6,7 +6,7 @@ import { branchXCharacter, isXCharacter, Pick, Test } from "./checks";
  *
  * @param {XCharacter} C
  * @param {XCharacter[]} characters
- * @returns { { prev: XCharacter, next: XCharacter } | undefined }
+ * @returns { XCharaPair | undefined }
  */
 export function findDrawOrderPair(C, characters) {
     return branchXCharacter(
