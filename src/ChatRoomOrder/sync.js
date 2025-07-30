@@ -4,32 +4,29 @@ import { validDrawOrderState } from "./checks";
 
 export const syncMsgKey = `Luzi_XCharacterDrawState`;
 
-let doSync = false;
+/** @type {undefined | number | true} */
+let doSync = undefined;
 function syncRun() {
     if (!doSync) return;
     const pl = /** @type {XCharacter}*/ (Player);
-    if (!pl || !pl?.MemberNumber) return;
-    if (!pl?.XCharacterDrawOrder) return;
-    const data = /** @type {XCharacterDrawOrderState} */ (
-        Object.fromEntries(
-            Object.entries(pl.XCharacterDrawOrder).filter(
-                ([k]) => k !== "drawState"
-            )
-        )
-    );
-    if (!data) return;
-    doSync = false;
+    if (!pl || !pl.MemberNumber || !pl.XCharacterDrawOrder) return;
     ServerSend("ChatRoomChat", {
         Content: syncMsgKey,
         Type: "Hidden",
-        Dictionary: [data],
+        ...(typeof doSync === "number" ? { Target: doSync } : undefined),
+        Dictionary: [{ ...pl.XCharacterDrawOrder, drawState: undefined }],
     });
+    doSync = undefined;
 }
 
 setInterval(() => syncRun(), 400);
 
-export function setSync() {
-    doSync = true;
+/**
+ * @param {number | true} arg
+ */
+export function setSync(arg = true) {
+    if (!doSync) doSync = arg;
+    else doSync = true;
 }
 
 /**
@@ -55,13 +52,9 @@ export function setupSync() {
         next(args);
     });
 
-    HookManager.hookFunction("ChatRoomSyncMemberLeave", 10, (args, next) => {
-        setSync();
+    HookManager.hookFunction("ChatRoomSyncMemberJoin", 10, (args, next) => {
+        setSync(args[0].SourceMemberNumber);
         next(args);
-    });
-
-    ChatRoomEvents.on("Action", ({ Content }) => {
-        if (Content === "ServerEnter") setSync();
     });
 
     ChatRoomEvents.on("Hidden", ({ Content, Sender, Dictionary }) => {
