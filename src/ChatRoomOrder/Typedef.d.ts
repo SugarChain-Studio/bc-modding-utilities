@@ -10,8 +10,14 @@ type NextXCharacterState = {
 
 type PrevOrNextXCharacter = PrevXCharacterState | NextXCharacterState;
 
+interface XCharacterDrawState {
+    X: number;
+    Y: number;
+    Zoom: number;
+}
+
 interface XCharacterDrawOrderBase {
-    drawState?: { X: number; Y: number; Zoom: number };
+    drawState?: XCharacterDrawState;
 }
 
 interface XCharacterDrawOrderAssetState {
@@ -48,3 +54,15 @@ type XCharaPair = CharaPair<XCharacter>;
 type XCharaPairAssetState = CharaPair<XCharacterDrawOrderAssetState>;
 type XCharaPairPoseState = CharaPair<XCharacterDrawOrderPoseState>;
 type XCharaPairTimerState = CharaPair<XCharacterDrawOrderTimerState>;
+
+type DrawOffsetParam = XCharacterDrawState;
+
+type DrawOffsetPipelineFunction = (
+    C: Character,
+    from: DrawOffsetParam
+) => DrawOffsetParam;
+
+type DrawOffsetFunction = (
+    C: Character,
+    from: DrawOffsetParam
+) => DrawOffsetParam | void;
