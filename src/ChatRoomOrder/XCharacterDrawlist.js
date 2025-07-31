@@ -42,78 +42,93 @@ export function findDrawOrderPair(C, characters) {
     );
 }
 
-export class XCharacterDrawlist {
-    /**
-     *
-     * @param {XCharacter[]} drawlist
-     * @returns
-     */
-    constructor(drawlist) {
-        /** @type {number[]} */
-        this.nList = [];
-
-        if (!Array.isArray(drawlist)) return;
-
-        const mMap = new Map(
-            Array.from(drawlist, (c, idx) => [c.MemberNumber, idx])
-        );
-
-        let cList = Array.from(drawlist, (_, idx) => idx);
-        /** @type {number[]} */
-        const pList = [];
-        while (cList.length > 0) {
-            const cIdx = cList.shift();
-            const c = drawlist[cIdx];
-            const result = findDrawOrderPair(c, drawlist);
-            if (result) {
-                const idxes = Object.values(result).map((c) =>
-                    mMap.get(c.MemberNumber)
-                );
-                pList.push(...idxes);
-                cList = cList.filter((idx) => !idxes.includes(idx));
-                continue;
-            }
-            pList.push(cIdx);
-        }
-
-        this.nList = pList;
-
-        this.cur = 0;
-    }
-
-    next() {
-        const ret = this.nList[this.cur];
-        this.cur = (this.cur + 1) % this.nList.length;
-        return ret;
-    }
-
-    get length() {
-        return this.nList.length;
-    }
-}
-
 export function setupXCharacterDrawlist() {
     HookManager.hookFunction("ChatRoomUpdateDisplay", 10, (args, next) => {
-        next(args);
+        if (!ChatRoomCharacterViewIsActive()) {
+            return next(args);
+        } else {
+            const oldL = ChatRoomCharacter;
 
-        /** @type {Set<number>} */
-        const characters = new Set(
-            ChatRoomCharacterDrawlist.map((c) => c.MemberNumber)
-        );
+            /** @type {(Character)[]} */
+            const newL = [];
 
-        for (const C of ChatRoomCharacterDrawlist) {
-            if (isXCharacter(C)) {
-                const pair = findDrawOrderPair(C, ChatRoomCharacter);
-                if (pair) {
-                    characters.add(pair.prev.MemberNumber);
-                    characters.add(pair.next.MemberNumber);
+            // push all characters with nextCharacter to the end of the list
+            const cCopy = [...ChatRoomCharacter];
+
+            /** @type {Set<number>} */
+            const pairedSet = new Set();
+
+            while (cCopy.length > 0) {
+                const chara = cCopy.shift();
+                const result = findDrawOrderPair(chara, cCopy);
+
+                if (!result) {
+                    newL.push(chara);
+                } else if (result.prev.MemberNumber === chara.MemberNumber) {
+                    cCopy.push(chara);
+                } else if (result.next.MemberNumber === chara.MemberNumber) {
+                    newL.push(result.prev, result.next);
+                    cCopy.splice(
+                        cCopy.findIndex(
+                            (c) => c.MemberNumber === result.next.MemberNumber
+                        ),
+                        1
+                    );
+                    pairedSet.add(result.prev.MemberNumber);
+                    pairedSet.add(result.next.MemberNumber);
                 }
             }
-        }
 
-        ChatRoomCharacterDrawlist = ChatRoomCharacter.filter((c) =>
-            characters.has(c.MemberNumber)
-        );
+            if (newL.length > 10) {
+                // a pair of characters is located at page split (e.g. 9 and 10)
+                if (
+                    pairedSet.has(newL[9].MemberNumber) &&
+                    pairedSet.has(newL[10].MemberNumber) &&
+                    Pick.prev(newL[10]) === newL[9].MemberNumber
+                ) {
+                    // there are a odd number of characters before 9th(0-based) character,
+                    // so there must be a non-paired character before 9th character
+                    // move the last non-paired character to the 10th position
+                    for (let i = 9; i >= 0; i--) {
+                        if (!pairedSet.has(newL[i].MemberNumber)) {
+                            const [single] = newL.splice(i, 1);
+                            newL.splice(9, 0, single);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            ChatRoomCharacter = newL;
+
+            next(args);
+
+            // for focus mode or low vision
+            if (
+                ChatRoomCharacterDrawlist.length < 5 &&
+                ChatRoomCharacter.length !== ChatRoomCharacterDrawlist.length
+            ) {
+                /** @type {Set<number>} */
+                const characters = new Set(
+                    ChatRoomCharacterDrawlist.map((c) => c.MemberNumber)
+                );
+
+                for (const C of ChatRoomCharacterDrawlist) {
+                    if (!pairedSet.has(C.MemberNumber)) {
+                        continue;
+                    }
+
+                    const other = Pick.other(C);
+                    if (other) characters.add(other);
+                }
+
+                ChatRoomCharacterDrawlist = ChatRoomCharacter.filter((c) =>
+                    characters.has(c.MemberNumber)
+                );
+            }
+
+            ChatRoomCharacter = oldL;
+        }
     });
 
     HookManager.progressiveHook("PreferenceArousalAtLeast")
@@ -124,56 +139,42 @@ export function setupXCharacterDrawlist() {
         });
 
     const func = HookManager.randomGlobalFunction(
-        "CreateX",
-        () => new XCharacterDrawlist(ChatRoomCharacterDrawlist)
-    );
+        "CheckXLine",
+        /** @type {(characters: Character[], charsPerRow: number) => boolean} */
+        (characters, charsPerRow) => {
+            if (characters.length <= charsPerRow) return false;
 
-    HookManager.patchFunction("ChatRoomCharacterViewLoopCharacters", {
-        "for (let C = 0; C < ChatRoomCharacterDrawlist.length; C++) {": `const XDraws = ${func}(); for (let C = 0; C < ChatRoomCharacterDrawlist.length; C++) { const CN = XDraws.next();`,
-        "!ChatRoomCharacterDrawlist[C].IsPlayer()":
-            "!ChatRoomCharacterDrawlist[CN].IsPlayer()",
-        "const res = callback(C, CharX, CharY, Space, Zoom);":
-            "const res = callback(C, CharX, CharY, Space, Zoom, CN);",
-    });
+            const l1Char = characters[charsPerRow - 1];
+            const l2Char = characters[charsPerRow];
+
+            const result = findDrawOrderPair(l1Char, characters);
+            if (!result) return false;
+
+            return (
+                result.prev.MemberNumber === l1Char.MemberNumber &&
+                result.next.MemberNumber === l2Char.MemberNumber
+            );
+        }
+    );
 
     const func2 = HookManager.randomGlobalFunction(
         "CheckX",
-        (characters, charsPerRow, drawIdx, idx) => {
-            if (drawIdx === 0) return [true, 0];
-
-            if (drawIdx === charsPerRow - 1) {
-                return [
-                    /** @type {any} */ (characters[idx])?.XCharacterDrawOrder
-                        ?.nextCharacter !== undefined,
-                    drawIdx + 1,
-                ];
+        /** @type {(xlineFlag: boolean, charsPerRow: number, charIdx: number) => [boolean, number]} */
+        (xlineFlag, charsPerRow, charIdx) => {
+            if (!xlineFlag) return [charIdx % charsPerRow === 0, charIdx];
+            else {
+                if (charIdx === 0) return [true, 0];
+                if (charIdx === charsPerRow - 1) return [true, charsPerRow];
+                return [false, charIdx];
             }
-
-            if (drawIdx === charsPerRow) {
-                return [
-                    /** @type {any} */ (characters[idx])?.XCharacterDrawOrder
-                        ?.prevCharacter === undefined,
-                    drawIdx,
-                ];
-            }
-
-            return [false, drawIdx];
         }
     );
 
     HookManager.patchFunction("ChatRoomCharacterViewDraw", {
-        "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, _space, roomZoom) => {":
-            "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, _space, roomZoom, cIdx) => {",
-        "ChatRoomCharacterDrawlist[charIdx]": "ChatRoomCharacterDrawlist[cIdx]",
-        "if (charIdx % charsPerRow === 0) {": `const [pflag, pidx] = ${func2}(ChatRoomCharacterDrawlist, charsPerRow, charIdx, cIdx); if (pflag) {`,
+        "ChatRoomCharacterViewLoopCharacters(": `const xlineFlag = ${func}(ChatRoomCharacterDrawlist, charsPerRow); ChatRoomCharacterViewLoopCharacters(`,
+        "if (charIdx % charsPerRow === 0) {": `const [pflag, pidx] = ${func2}(xlineFlag, charsPerRow, charIdx); if (pflag) {`,
         "RectMakeRect(0, Y + charIdx * 100, viewWidth, viewHeight * roomZoom);":
             "RectMakeRect(0, Y + pidx * 100, viewWidth, viewHeight * roomZoom);",
-    });
-
-    HookManager.patchFunction("ChatRoomCharacterViewClick", {
-        "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, space, zoom) => {":
-            "ChatRoomCharacterViewLoopCharacters((charIdx, charX, charY, space, zoom, cIdx) => {",
-        "ChatRoomCharacterDrawlist[charIdx]": "ChatRoomCharacterDrawlist[cIdx]",
     });
 
     Object.assign(ChatRoomViews.Character, {

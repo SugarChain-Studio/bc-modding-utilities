@@ -34,23 +34,27 @@ class ChatRoomOrder_ {
     }
 
     /**
-     * 查找一个人物的配对绘制对象
-     * @param { Character } C
-     * @returns { XCharaPair }
-     */
-    findPair(C) {
-        return findDrawOrderPair(C, ChatRoomCharacterDrawlist);
-    }
-
-    /**
-     * @param {XCharaPair} pair
+     * 检查特定配对是否是物品模式
+     * @param {XCharaPair} pair 人物配对
+     * @param {{prev: string, next: string}[]} [assetList] 如果提供，则检查配对的物品是否在列表中
      * @return {XCharaPairAssetState | undefined} 返回人物的配对绘制状态，如果没有设置则返回 undefined
      */
-    requirePairAssetState(pair) {
-        const prev = pair.prev.XCharacterDrawOrder;
-        const next = pair.next.XCharacterDrawOrder;
-        if (!isAssetState(prev) || !isAssetState(next)) return undefined;
-        return { prev, next };
+    requirePairAssetState(pair, assetList) {
+        const prevState = pair.prev.XCharacterDrawOrder;
+        const nextState = pair.next.XCharacterDrawOrder;
+        if (!isAssetState(prevState) || !isAssetState(nextState))
+            return undefined;
+        if (
+            Array.isArray(assetList) &&
+            !assetList.some(
+                ({ prev, next }) =>
+                    prev === prevState.associatedAsset.asset &&
+                    next === nextState.associatedAsset.asset
+            )
+        ) {
+            return undefined;
+        }
+        return { prev: prevState, next: nextState };
     }
 
     /**
@@ -65,34 +69,9 @@ class ChatRoomOrder_ {
     }
 
     /**
-     * 如果两个人物被设置为配对绘制，返回两个人物的绘制状态
-     * @param {Character} C
-     * @returns {{prev:{C:Character,drawState:XCharacterDrawOrderState["drawState"]},next:{C:Character,drawState:XCharacterDrawOrderState["drawState"]}} | undefined} 如果没找到，返回undefined
-     */
-    requirePairDrawState(C) {
-        const ret = findDrawOrderPair(C, ChatRoomCharacterDrawlist);
-        if (
-            !ret ||
-            !ret.prev.XCharacterDrawOrder.drawState ||
-            !ret.next.XCharacterDrawOrder.drawState
-        )
-            return undefined;
-        return {
-            prev: {
-                C: ret.prev,
-                drawState: ret.prev.XCharacterDrawOrder.drawState,
-            },
-            next: {
-                C: ret.next,
-                drawState: ret.next.XCharacterDrawOrder.drawState,
-            },
-        };
-    }
-
-    /**
      * 如果两个人物被设置为配对绘制，返回两个人物和参考中心
      * @param {Character} C
-     * @returns {{prev:XCharacter, next:XCharacter, center:{X:number,Y:number}} | undefined} 如果没找到，返回undefined
+     * @returns {{prev:XCharacter, next:XCharacter, center:{X:number,Y:number}, where:{prev:XCharacterDrawState, next:XCharacterDrawState}} | undefined} 如果没找到，返回undefined
      */
     requireSharedCenter(C) {
         const pair = findDrawOrderPair(C, ChatRoomCharacterDrawlist);
@@ -115,7 +94,7 @@ class ChatRoomOrder_ {
             return { X: (prev.X + next.X) / 2, Y: (prev.Y + next.Y) / 2 };
         })();
 
-        return { ...pair, center };
+        return { ...pair, center, where: { prev, next } };
     }
 }
 
