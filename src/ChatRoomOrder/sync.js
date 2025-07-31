@@ -64,12 +64,12 @@ export function setupSync() {
                 (c) => c.MemberNumber === Sender
             );
             if (target) {
-                const drawState = target.XCharacterDrawOrder?.drawState;
+                const oldDrawState = target.XCharacterDrawOrder?.drawState;
                 target.XCharacterDrawOrder = validDrawOrderState(
                     /** @type {unknown}*/ (Dictionary[0])
                 );
-                if (target.XCharacterDrawOrder && drawState)
-                    target.XCharacterDrawOrder.drawState = drawState;
+                if (target.XCharacterDrawOrder && oldDrawState)
+                    target.XCharacterDrawOrder.drawState = oldDrawState;
             }
             return;
         }
