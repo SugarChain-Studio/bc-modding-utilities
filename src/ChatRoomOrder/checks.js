@@ -102,9 +102,26 @@ export function pickCharacterPrev(c) {
     return dobj.prevCharacter;
 }
 
+/**
+ * @param {Character} c
+ * @returns { number | undefined }
+ */
+export function pickCharactreOther(c) {
+    const dobj = /** @type {any} */ (c)?.XCharacterDrawOrder;
+    if (!dobj || !isDrawOrderState(dobj)) return undefined;
+
+    if (typeof dobj.prevCharacter === "number") {
+        return dobj.prevCharacter;
+    } else if (typeof dobj.nextCharacter === "number") {
+        return dobj.nextCharacter;
+    }
+    return undefined;
+}
+
 export const Pick = {
     next: pickCharacterNext,
     prev: pickCharacterPrev,
+    other: pickCharactreOther,
 };
 
 /**
