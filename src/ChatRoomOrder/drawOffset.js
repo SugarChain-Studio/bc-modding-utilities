@@ -22,6 +22,53 @@ const modifierPipeline = globalPipeline(
     }
 );
 
+/**
+ * @template R
+ */
+class ModifiersWithPrereq {
+    /**
+     * @typedef { (prereq: R, ...args:Parameters<DrawOffsetFunction>)=> ReturnType<DrawOffsetFunction>} DrawOffsetPrereqFunction
+     */
+
+    /**
+     * @param {(...args:Parameters<DrawOffsetFunction>)=> R | undefined} prereq
+     */
+    constructor(prereq) {
+        this.prereq = prereq;
+
+        /** @type {DrawOffsetPrereqFunction[]} */
+        this.modifiers = [];
+
+        modifierPipeline.register((acc, C, initState) => {
+            const check = this.prereq(C, initState);
+            if (!check) return acc;
+
+            this.modifiers.reduce((pv, modifier) => {
+                const result = modifier(check, C, pv);
+                if (result) {
+                    return result;
+                }
+                return pv;
+            }, acc);
+        });
+    }
+
+    /**
+     * @param {DrawOffsetPrereqFunction} modifier
+     */
+    addModifier(modifier) {
+        this.modifiers.push(modifier);
+    }
+}
+
+/**
+ * @template R
+ * @param {(...args:Parameters<DrawOffsetFunction>)=> R | undefined} prereq
+ */
+function createPrereq(prereq) {
+    return new ModifiersWithPrereq(prereq);
+}
+
 export const DrawCharacterModifier = {
     /**
      * @param {DrawOffsetFunction} modifier
@@ -35,4 +82,6 @@ export const DrawCharacterModifier = {
             return acc;
         });
     },
+
+    createPrereq,
 };
