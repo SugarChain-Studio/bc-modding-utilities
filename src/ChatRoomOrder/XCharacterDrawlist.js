@@ -67,12 +67,9 @@ function reorderedChatRoomCharacter() {
             cCopy.push(chara);
         } else if (result.next.MemberNumber === chara.MemberNumber) {
             newList.push(result.prev, result.next);
-            cCopy.splice(
-                cCopy.findIndex(
-                    (c) => c.MemberNumber === result.next.MemberNumber
-                ),
-                1
-            );
+            const other = Pick.other(chara);
+            const otherIdx = cCopy.findIndex((c) => c.MemberNumber === other);
+            if (otherIdx >= 0) cCopy.splice(otherIdx, 1);
             pairedSet.add(result.prev.MemberNumber);
             pairedSet.add(result.next.MemberNumber);
         }
