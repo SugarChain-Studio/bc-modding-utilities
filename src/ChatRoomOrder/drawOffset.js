@@ -43,7 +43,7 @@ class ModifiersWithPrereq {
             const check = this.prereq(C, initState);
             if (!check) return acc;
 
-            this.modifiers.reduce((pv, modifier) => {
+            return this.modifiers.reduce((pv, modifier) => {
                 const result = modifier(check, C, pv);
                 if (result) {
                     return result;
