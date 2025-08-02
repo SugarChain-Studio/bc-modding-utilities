@@ -68,14 +68,37 @@ const nullOpt = new Optional(undefined);
 
 /**
  * Creates a monadic Optional instance from a value.
- * For the people who hate the `new` keyword.
+ * Returns an Optional with the value and an empty context.
+ * If the value is undefined, it returns a nullOpt.
  * @template T
- * @template {Object} [Ctx = {}]
- * @param { T | undefined } opt
- * @param {Ctx} [ctx]
- * @returns {Optional<T, Ctx>}
+ * @overload
+ * @param { T | undefined } arg0
+ * @returns {Optional<T, {}>} An Optional instance with the value and an empty context.
  */
-export function monadic(opt, ctx = /** @type {Ctx} */ ({})) {
-    if (opt === undefined) return /** @type {Optional<T, Ctx>} */ (nullOpt);
-    return new Optional(opt, ctx);
+/**
+ * Creates a monadic Optional instance from a value.
+ * Returns an Optional with the value and a context containing the specified key.
+ * If the value is undefined, it returns a nullOpt.
+ * @template T
+ * @template {string} K
+ * @overload
+ * @param { K } arg0 - The key to be used in the context.
+ * @param { T | undefined } arg1 - The value to be wrapped in the Optional.
+ * @returns {Optional<T, {[k in K]: T}>} - An Optional instance with the value and context containing the key.
+ */
+/**
+ * @template T
+ * @template {string} K
+ * @param { K | T | undefined } arg0
+ * @param { T | undefined | "__dxglhj"} [arg1]
+ */
+export function monadic(arg0, arg1 = "__dxglhj") {
+    const rOpt = arg1 === "__dxglhj" ? arg0 : arg1;
+    if (rOpt === undefined) return /** @type {Optional<T, {}>} */ (nullOpt);
+    if (typeof arg0 === "string") {
+        return /** @type {Optional<T, {[k in K]: T}>} */ (
+            new Optional(rOpt, /** @type { {[k in K]: T}} */ ({ [arg0]: rOpt }))
+        );
+    }
+    return /** @type {Optional<T, {}>} */ (new Optional(rOpt, {}));
 }
