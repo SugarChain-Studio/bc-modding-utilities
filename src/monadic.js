@@ -69,7 +69,7 @@ const nullOpt = new Optional(undefined);
 /**
  * Creates a monadic Optional instance from a value.
  * Returns an Optional with the value and an empty context.
- * If the value is undefined, it returns a nullOpt.
+ * If the value is undefined or null, it returns a nullOpt.
  * @template T
  * @overload
  * @param { T | undefined | null } arg0
@@ -78,7 +78,7 @@ const nullOpt = new Optional(undefined);
 /**
  * Creates a monadic Optional instance from a value.
  * Returns an Optional with the value and a context containing the specified key.
- * If the value is undefined, it returns a nullOpt.
+ * If the value is undefined or null, it returns a nullOpt.
  * @template T
  * @template {string} K
  * @overload
@@ -94,7 +94,8 @@ const nullOpt = new Optional(undefined);
  */
 export function monadic(arg0, arg1 = "__dxglhj") {
     const rOpt = arg1 === "__dxglhj" ? arg0 : arg1;
-    if (rOpt == undefined) return /** @type {Optional<T, {}>} */ (nullOpt);
+    if (rOpt === undefined || rOpt === null)
+        return /** @type {Optional<T, {}>} */ (nullOpt);
     if (typeof arg0 === "string") {
         return /** @type {Optional<T, {[k in K]: T}>} */ (
             new Optional(rOpt, /** @type { {[k in K]: T}} */ ({ [arg0]: rOpt }))
