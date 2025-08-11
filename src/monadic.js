@@ -1,3 +1,5 @@
+const isNullish = (value) => value === null || value === undefined;
+
 /**
  * @template T
  * @template {Object} [Ctx = {}]
@@ -40,13 +42,13 @@ export class Optional {
      * @param {(value: T, ctx: Ctx) => R | undefined} [callback]
      */
     then(ctxNameOrCallback, callback) {
-        if (this.value === undefined) return nullOpt;
+        if (isNullish(this.value)) return nullOpt;
         const cb =
             typeof ctxNameOrCallback === "function"
                 ? ctxNameOrCallback
                 : callback;
         const result = cb(this.value, this.ctx);
-        if (result === undefined) return nullOpt;
+        if (isNullish(result)) return nullOpt;
         if (typeof ctxNameOrCallback === "string") {
             /** @type {any}*/ (this.ctx)[ctxNameOrCallback] = result;
         }
@@ -59,7 +61,7 @@ export class Optional {
      * @returns {R | T}
      */
     valueOr(defaultValue) {
-        if (this.value === undefined) return defaultValue();
+        if (isNullish(this.value)) return defaultValue();
         return this.value;
     }
 }
@@ -94,8 +96,7 @@ const nullOpt = new Optional(undefined);
  */
 export function monadic(arg0, arg1 = "__dxglhj") {
     const rOpt = arg1 === "__dxglhj" ? arg0 : arg1;
-    if (rOpt === undefined || rOpt === null)
-        return /** @type {Optional<T, {}>} */ (nullOpt);
+    if (isNullish(rOpt)) return /** @type {Optional<T, {}>} */ (nullOpt);
     if (typeof arg0 === "string") {
         return /** @type {Optional<T, {[k in K]: T}>} */ (
             new Optional(rOpt, /** @type { {[k in K]: T}} */ ({ [arg0]: rOpt }))
