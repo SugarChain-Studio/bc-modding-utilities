@@ -56,6 +56,20 @@ export class Optional {
     }
 
     /**
+     * Filters the value using the provided predicate. If the predicate returns anything true, the value is kept.
+     * @param {(value:T, ctx:Ctx) => any} pred
+     */
+    filter(pred) {
+        if (isNullish(this.value)) return nullOpt;
+        if (pred(this.value, this.ctx)) {
+            return this;
+        } else {
+            return /** @type {Optional<T,Ctx>} */ (nullOpt);
+        }
+    }
+
+    /**
+     * Returns the value if it exists, otherwise returns the result of calling the defaultValue function.
      * @template R
      * @param {() => R} defaultValue
      * @returns {R | T}
