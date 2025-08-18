@@ -349,7 +349,10 @@ async function createModRollupConfig({ env, packageJSON, banner = "" }) {
             banner,
         },
         treeshake: true,
-        external: ["https://cdn.jsdelivr.net/npm/sweetalert2@11.6.13/+esm"],
+        external: [
+            "https://cdn.jsdelivr.net/npm/sweetalert2@11.6.13/+esm",
+            "https://cdn.jsdelivr.net/npm/bondage-club-mod-sdk@1.2.0/dist/bcmodsdk.js",
+        ],
     });
 
     await writeAssetOverrides({
