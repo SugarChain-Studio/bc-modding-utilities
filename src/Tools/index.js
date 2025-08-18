@@ -1,3 +1,4 @@
+import { Constants } from "./constants";
 import { DialogTools } from "./dialogs";
 
 /** @type {AssetGroupItemName[]} */
@@ -51,9 +52,11 @@ export class Tools {
      * @param {number} [minFrameTime=30] 最小帧时间
      */
     static drawUpdate(C, data, minFrameTime = 30) {
-        const FrameTime = Player.GraphicsSettings
-            ? Math.max(minFrameTime, Player.GraphicsSettings.AnimationQuality * 0.6)
-            : 30;
+        const fValue = Math.max(
+            minFrameTime,
+            Player.GraphicsSettings.AnimationQuality * 0.6
+        );
+        const FrameTime = Player.GraphicsSettings ? fValue : 30;
 
         const now = CommonTime();
 
@@ -70,12 +73,7 @@ export class Tools {
      * @returns {CommonChatTags[]}
      */
     static CommonChatTags() {
-        return [
-            CommonChatTags.SOURCE_CHAR,
-            CommonChatTags.TARGET_CHAR,
-            CommonChatTags.DEST_CHAR,
-            CommonChatTags.ASSET_NAME,
-        ];
+        return [...Constants.CommonChatTags];
     }
 
     /**
@@ -87,11 +85,21 @@ export class Tools {
     static topLeftAdjust(data, diff) {
         if (typeof diff === "number") {
             return /** @type {TopLeft.Data}*/ (
-                Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value + diff]))
+                Object.fromEntries(
+                    Object.entries(data).map(([key, value]) => [
+                        key,
+                        value + diff,
+                    ])
+                )
             );
         } else {
             return /** @type {TopLeft.Data}*/ (
-                Object.fromEntries(Object.entries(data).map(([key, value]) => [key, value + (diff[key] ?? 0)]))
+                Object.fromEntries(
+                    Object.entries(data).map(([key, value]) => [
+                        key,
+                        value + (diff[key] ?? 0),
+                    ])
+                )
             );
         }
     }
@@ -104,10 +112,19 @@ export class Tools {
      */
     static topLeftOverride(data, over) {
         if (typeof over === "number") {
-            return /** @type {TopLeft.Data}*/ (Object.fromEntries(Object.entries(data).map(([key, _]) => [key, over])));
+            return /** @type {TopLeft.Data}*/ (
+                Object.fromEntries(
+                    Object.entries(data).map(([key, _]) => [key, over])
+                )
+            );
         } else {
             return /** @type {TopLeft.Data}*/ (
-                Object.fromEntries(Object.entries(data).map(([key, value]) => [key, over[key] ?? value]))
+                Object.fromEntries(
+                    Object.entries(data).map(([key, value]) => [
+                        key,
+                        over[key] ?? value,
+                    ])
+                )
             );
         }
     }
@@ -134,9 +151,13 @@ export class Tools {
                 break;
         }
 
-        const urlParts = [A.Name, G, LayerType, OverrideName ?? L].filter((c) => c);
+        const urlParts = [A.Name, G, LayerType, OverrideName ?? L].filter(
+            (c) => c
+        );
 
-        return `Assets/${A.Group.Family}/${GroupName}/${poseSegment}${urlParts.join("_")}.png`;
+        return `Assets/${
+            A.Group.Family
+        }/${GroupName}/${poseSegment}${urlParts.join("_")}.png`;
     }
 
     /**
@@ -150,11 +171,53 @@ export class Tools {
             elementData: Array.from({ length: itemCount }).map((_, idx) => {
                 const idxOnPage = idx % perPage;
                 return {
-                    position: [1135 + 250 * (idxOnPage % 3), 450 + 75 * Math.floor(idxOnPage / 3)],
+                    position: [
+                        1135 + 250 * (idxOnPage % 3),
+                        450 + 75 * Math.floor(idxOnPage / 3),
+                    ],
                     drawImage: false,
                 };
             }),
             itemsPerPage: perPage,
         };
+    }
+}
+
+/**
+ * 姿势映射工具类
+ */
+export class PoseMapTools {
+    /**
+     * 合成姿势映射，基础数据是所有姿势都隐藏。根据参数补充显示的姿势。
+     *
+     * @example
+     * // 合成一个姿势映射，在Yoked姿势显示默认图片，在BackBoxTie姿势显示BackBoxTie目录下的图片，其他姿势都隐藏
+     * const poseMapping = PoseMapTools.Compose({
+     *     "Yoked": "",
+     *     "BackBoxTie": "BackBoxTie"
+     * });
+     *
+     * @param {AssetPoseMapping} posem 用于合成的姿势映射
+     * @returns {AssetPoseMapping}
+     */
+    static FromHide(posem) {
+        return { ...Constants.PoseHideAll, ...posem };
+    }
+
+    /**
+     * 合成姿势映射，隐藏AllFours和Hogtied
+     *
+     * @example
+     * // 如同 const poseMapping = { AllFours: "Hide", Hogtied: "Hide" }
+     * const poseMapping = PoseMapTools.HideFullBody();
+     *
+     * // 如同 const poseMapping = { Yoked: "Hide", AllFours: "Hide", Hogtied: "Hide" }
+     * const poseMapping = PoseMapTools.HideFullBody({Yoked: "Hide"});
+     *
+     * @param {AssetPoseMapping} [posem] 用于合成的姿势映射
+     * @returns {AssetPoseMapping}
+     */
+    static HideFullBody(posem) {
+        return { AllFours: "Hide", Hogtied: "Hide", ...posem };
     }
 }
