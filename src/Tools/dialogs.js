@@ -6,8 +6,8 @@
 /**
  * @template {string} GroupName
  * @typedef { Object } DialogGeneratorParam
- * @property { GroupName [] } groups 需要生成对话的物品组名
- * @property { string[] } itemNames 需要生成对话的物品名
+ * @property { GroupName [] } [groups] 需要生成对话的物品组名
+ * @property { string[] } [itemNames] 需要生成对话的物品名
  * @property { string } selectBase 主页面标题文本
  * @property { MainDialogGenerator } module 产生主页面按钮文本（Module）和子页面标题（Select）名字的函数
  * @property { OptionDialogGenerator } option 产生选项按钮文本（Option）和选项输出文本（Set）的函数
@@ -30,12 +30,15 @@ export class DialogTools {
             const { groups, itemNames, selectBase, module, option } = param;
             const { Select, Module } = module(cv);
 
+            const groups_ = Array.isArray(groups) ? groups : [""];
+            const itemNames_ = Array.isArray(itemNames) ? itemNames : [""];
+
             /**
-             * @param { (group: GroupName, itemName: string) => void } cb
+             * @param { (group: string, itemName: string) => void } cb
              */
             const foreachGroupItem = (cb) => {
-                for (const group of groups) {
-                    for (const itemName of itemNames) {
+                for (const group of groups_) {
+                    for (const itemName of itemNames_) {
                         cb(group, itemName);
                     }
                 }
@@ -108,7 +111,8 @@ export class DialogTools {
      */
     static makeCustomDialogGenerator(prefix) {
         const fprefix = `${CustomDialogPrefix}${prefix}`;
-        return (...details) => `${fprefix}${details.map((v) => v.toString()).join("")}`;
+        return (...details) =>
+            `${fprefix}${details.map((v) => v.toString()).join("")}`;
     }
 
     /**
