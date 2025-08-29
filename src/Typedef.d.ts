@@ -27,21 +27,29 @@ type CustomGroupBodyName =
     | '额外头发_Luzi'
     | '额外身高_Luzi'
     | '身体痕迹_Luzi'
+    | '外观工具'
     | '左眼_Luzi'
     | '右眼_Luzi';
 
-type CustomGroupName = import('@sugarch/bc-mod-types').CustomGroupName<CustomGroupBodyName>;
+type CustomGroupName =
+    import('@sugarch/bc-mod-types').CustomGroupName<CustomGroupBodyName>;
 
 declare namespace Translation {
     type Entry = import('@sugarch/bc-mod-types').Translation.Entry;
     type Dialog = import('@sugarch/bc-mod-types').Translation.Dialog;
     type String = import('@sugarch/bc-mod-types').Translation.String;
-    type ActivityEntry = import('@sugarch/bc-mod-types').Translation.ActivityEntry;
-    type GroupedEntries = import('@sugarch/bc-mod-types').Translation.GroupedEntries<CustomGroupBodyName>;
-    type CustomRecord<T extends string, U> = import('@sugarch/bc-mod-types').Translation.CustomRecord<T, U>;
+    type ActivityEntry =
+        import('@sugarch/bc-mod-types').Translation.ActivityEntry;
+    type GroupedEntries =
+        import('@sugarch/bc-mod-types').Translation.GroupedEntries<CustomGroupBodyName>;
+    type CustomRecord<
+        T extends string,
+        U
+    > = import('@sugarch/bc-mod-types').Translation.CustomRecord<T, U>;
 }
 
-type AssetOverrideContainer = import('@sugarch/bc-mod-types').AssetOverrideContainer;
+type AssetOverrideContainer =
+    import('@sugarch/bc-mod-types').AssetOverrideContainer;
 
 declare function ServerSend<T extends keyof ClientToServerEvents>(
     Message: T,
@@ -57,7 +65,10 @@ type DrawFunParameters<T extends (...args: any[]) => any> = T extends (
     ? P
     : never;
 
-type SliceParameters<E extends number, T extends (...args: any[]) => any> = E extends 0
+type SliceParameters<
+    E extends number,
+    T extends (...args: any[]) => any
+> = E extends 0
     ? T
     : E extends 1
     ? T extends (_1: any, ...args: infer P) => any
@@ -76,7 +87,14 @@ type SliceParameters<E extends number, T extends (...args: any[]) => any> = E ex
         ? P
         : never
     : E extends 5
-    ? T extends (_1: any, _2: any, _3: any, _4: any, _5: any, ...args: infer P) => any
+    ? T extends (
+          _1: any,
+          _2: any,
+          _3: any,
+          _4: any,
+          _5: any,
+          ...args: infer P
+      ) => any
         ? P
         : never
     : never;
