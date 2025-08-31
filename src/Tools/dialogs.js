@@ -166,4 +166,53 @@ export class DialogTools {
         }
         return ret;
     }
+
+    /**
+     * 自动生成物品对话文本，例如：
+     * 已经有 Options1，则自动生成 Sets1 为 `SourceCharacter将DestinationCharacterAssetName设置为${Options1}`
+     *
+     * @param {Translation.String} assetStrings
+     * @param {ModularItemConfig | TypedItemConfig} config
+     */
+    static autoItemStrings(assetStrings, config) {
+        /** @type {Translation.String} */
+        const ret = {};
+
+        /** @type {{from:string, to:string}[]} */
+        const keys = [];
+        if (config.Archetype === ExtendedArchetype.MODULAR) {
+            config.Modules.forEach((m) => {
+                keys.push(
+                    ...Array.from({ length: m.Options.length }, (_, i) => ({
+                        from: `Set${m.Key}${i}`,
+                        to: `Option${m.Key}${i}`,
+                    }))
+                );
+            });
+        } else if (config.Archetype === ExtendedArchetype.TYPED) {
+            keys.push(
+                ...Array.from(config.Options, (t) => ({
+                    from: `${t.Name}`,
+                    to: `Set${t.Name}`,
+                }))
+            );
+        }
+
+        const krder = {
+            CN: (from) =>
+                `SourceCharacter将DestinationCharacterAssetName设置为${assetStrings["CN"][from]}`,
+            EN: (from) =>
+                `SourceCharacter sets DestinationCharacter AssetName to ${assetStrings["EN"][from]}`,
+        };
+
+        for (const lang in assetStrings) {
+            ret[lang] = { ...assetStrings[lang] };
+            if (lang in krder) {
+                keys.forEach(({ from, to }) => {
+                    ret[lang][to] = krder[lang](from);
+                });
+            }
+        }
+        return ret;
+    }
 }
