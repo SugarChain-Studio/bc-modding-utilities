@@ -215,4 +215,44 @@ export class DialogTools {
         }
         return ret;
     }
+
+    /**
+     * 获取一个生成物品对话键的函数
+     * @example
+     * const dialogKey = Dialogs.dialogKey(item);
+     * const key = dialogKey("some_key");
+     * // key = "GroupNameAssetNamesome_key"
+     *
+     * @overload
+     * @param { Item | Asset} arg0
+     * @returns {(Key: string) => string}
+     */
+    /**
+     * 获取一个生成物品对话键的函数
+     * @example
+     * const dialogKey = Dialogs.dialogKey("GroupName", "AssetName");
+     * const key = dialogKey("some_key");
+     * // key = "GroupNameAssetNamesome_key"
+     * @overload
+     * @param { CustomGroupBodyName } arg0
+     * @param { string } arg1
+     * @returns {(Key: string) => string}
+     */
+    /**
+     * @param {CustomGroupBodyName | Item | Asset} arg0
+     * @param {string} [arg1]
+     * @returns {(Key: string) => string}
+     */
+    static dialogKey(arg0, arg1) {
+        let groupName, assetName;
+        if (typeof arg0 === "string") {
+            groupName = arg0;
+            assetName = arg1;
+        } else {
+            const Asset = "Asset" in arg0 ? arg0.Asset : arg0;
+            groupName = Asset.Group.Name;
+            assetName = Asset.Name;
+        }
+        return (Key) => `${groupName}${assetName}${Key}`;
+    }
 }
