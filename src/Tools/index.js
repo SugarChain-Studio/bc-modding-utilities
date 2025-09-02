@@ -1,5 +1,6 @@
 import { Constants } from "./constants";
 import { DialogTools } from "./dialogs";
+import { StateTools } from "./state";
 import { Logger } from "@mod-utils/log";
 
 /** @type {AssetGroupItemName[]} */
@@ -35,6 +36,7 @@ const ItemGroups = [
 ];
 
 export { DialogTools };
+export { StateTools };
 
 export class Tools {
     /**
@@ -132,8 +134,8 @@ export class Tools {
 
     /**
      * 获取物品图片资源URL
-     * @param {DynamicDrawingData<Record<string, unknown>>} drawData
-     * @param {string} [OverrideName]
+     * @param {DynamicDrawingData<Record<string, unknown>>} drawData 绘制数据
+     * @param {string} [OverrideName] 代替图层名，如果不提供则使用 drawData.L
      */
     static getAssetURL(drawData, OverrideName) {
         const { A, L, Pose, G, GroupName, LayerType } = drawData;
