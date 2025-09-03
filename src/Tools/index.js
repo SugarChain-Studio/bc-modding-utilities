@@ -55,11 +55,12 @@ export class Tools {
      * @param {number} [minFrameTime=30] 最小帧时间
      */
     static drawUpdate(C, data, minFrameTime = 30) {
-        const fValue = Math.max(
-            minFrameTime,
-            Player.GraphicsSettings.AnimationQuality * 0.6
-        );
-        const FrameTime = Player.GraphicsSettings ? fValue : 30;
+        const fValue = () =>
+            Math.max(
+                minFrameTime,
+                Player.GraphicsSettings.AnimationQuality * 0.6
+            );
+        const FrameTime = Player.GraphicsSettings ? fValue() : 30;
 
         const now = CommonTime();
 
