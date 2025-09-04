@@ -29,7 +29,8 @@ type CustomGroupBodyName =
     | '身体痕迹_Luzi'
     | '外观工具'
     | '左眼_Luzi'
-    | '右眼_Luzi';
+    | '右眼_Luzi'
+    | 'LuziCustom';
 
 type CustomGroupName =
     import('@sugarch/bc-mod-types').CustomGroupName<CustomGroupBodyName>;
