@@ -221,3 +221,15 @@ export const Test = {
     testTimerState,
     testDrawState: testDrawOrderState,
 };
+
+/**
+ * 获取角色的 XCharacterDrawOrderState，如果无效则返回 undefined。
+ * @param {XCharacter} C
+ * @returns { XCharacterDrawOrderState | undefined }
+ */
+export function fetchState(C) {
+    if (testDrawOrderState(C, C.XCharacterDrawOrder)) {
+        return C.XCharacterDrawOrder;
+    }
+    return undefined;
+}

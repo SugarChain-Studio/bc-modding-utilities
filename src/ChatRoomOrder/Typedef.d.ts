@@ -18,6 +18,7 @@ interface XCharacterDrawState {
 
 interface XCharacterDrawOrderBase {
     drawState?: XCharacterDrawState;
+    leash?: 'lead' | 'follow';
 }
 
 interface XCharacterDrawOrderAssetState {

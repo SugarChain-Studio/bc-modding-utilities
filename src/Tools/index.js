@@ -1,7 +1,6 @@
 import { Constants } from "./constants";
 import { DialogTools } from "./dialogs";
 import { StateTools } from "./state";
-import { Logger } from "@mod-utils/log";
 
 /** @type {AssetGroupItemName[]} */
 const ItemGroups = [

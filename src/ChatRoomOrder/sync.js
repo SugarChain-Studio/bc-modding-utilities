@@ -1,6 +1,6 @@
 import { HookManager } from "@sugarch/bc-mod-hook-manager";
 import { ChatRoomEvents } from "@sugarch/bc-event-handler";
-import { validDrawOrderState } from "./checks";
+import { fetchState, Pick, validDrawOrderState } from "./checks";
 
 export const syncMsgKey = `Luzi_XCharacterDrawState`;
 
@@ -74,4 +74,50 @@ export function setupSync() {
             return;
         }
     });
+
+    //#region 牵引同步
+    HookManager.hookFunction("ChatRoomPingLeashedPlayers", 0, (args, next) => {
+        const prevLeash = ChatRoomLeashList;
+        if (fetchState(Player)?.leash === "lead") {
+            ChatRoomLeashList = [
+                ...ChatRoomLeashList,
+                Pick.other(Player),
+            ].filter((id) => typeof id === "number");
+        }
+        next(args);
+        ChatRoomLeashList = prevLeash;
+    });
+
+    const insideLeashFuncs = [
+        HookManager.insideFlag("ChatRoomDoPingLeashedPlayers"),
+        HookManager.insideFlag("ServerAccountBeep"),
+    ];
+
+    HookManager.hookFunction("ServerAccountBeep", 0, (args, next) => {
+        const oldLeashPlayer = ChatRoomLeashPlayer;
+        if (
+            args[0].MemberNumber === Pick.other(Player) &&
+            fetchState(Player)?.leash === "follow" &&
+            !ChatRoomLeashPlayer
+        ) {
+            ChatRoomLeashPlayer = args[0].MemberNumber;
+        }
+        next(args);
+        ChatRoomLeashPlayer = oldLeashPlayer;
+    });
+
+    HookManager.hookFunction("ChatRoomCanBeLeashedBy", 0, (args, next) => {
+        if (insideLeashFuncs.some((f) => f.inside) && args[1].IsPlayer()) {
+            const state = fetchState(args[1]);
+            if (
+                state?.leash === "follow" &&
+                Pick.other(args[1]) === Player.MemberNumber
+            ) {
+                return true;
+            }
+        }
+
+        return next(args);
+    });
+    //#endregion
 }
