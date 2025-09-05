@@ -18,9 +18,14 @@ export function findDrawOrderPair(C, characters) {
             }
 
             const otherC = characters.find((c) => c.MemberNumber === other);
-            if (!otherC) return undefined;
+            if (
+                !otherC ||
+                !Test.testDrawState(otherC, otherC.XCharacterDrawOrder)
+            )
+                return undefined;
+
             const otherNum = Pick.next(otherC);
-            if (otherNum) {
+            if (otherNum === C.MemberNumber) {
                 return { prev: otherC, next: C };
             }
             return undefined;
@@ -32,9 +37,14 @@ export function findDrawOrderPair(C, characters) {
             }
 
             const otherC = characters.find((c) => c.MemberNumber === other);
-            if (!otherC) return undefined;
+            if (
+                !otherC ||
+                !Test.testDrawState(otherC, otherC.XCharacterDrawOrder)
+            )
+                return undefined;
+
             const otherNum = Pick.prev(otherC);
-            if (otherNum) {
+            if (otherNum === C.MemberNumber) {
                 return { prev: C, next: otherC };
             }
             return undefined;
