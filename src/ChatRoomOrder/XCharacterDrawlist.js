@@ -98,7 +98,7 @@ function reorderedChatRoomCharacter() {
             for (let i = 9; i >= 0; i--) {
                 if (!pairedSet.has(newList[i].MemberNumber)) {
                     const [single] = newList.splice(i, 1);
-                    newList.splice(9, 0, single);
+                    newList.splice(10, 0, single);
                     break;
                 }
             }
