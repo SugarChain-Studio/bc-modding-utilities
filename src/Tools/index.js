@@ -2,6 +2,8 @@ import { Constants } from "./constants";
 import { DialogTools } from "./dialogs";
 import { StateTools } from "./state";
 
+export { ImageMapTools } from "./imageMapTools";
+
 /** @type {AssetGroupItemName[]} */
 const ItemGroups = [
     "ItemFeet",
@@ -183,36 +185,6 @@ export class Tools {
             }),
             itemsPerPage: perPage,
         };
-    }
-}
-
-export class PathTools {
-    /**
-     * @param {CustomGroupName} group
-     * @param {string} layerName
-     * @returns {string}
-     */
-    static assetLayer(group, layerName) {
-        return `Assets/Female3DCG/${group}/${layerName}.png`;
-    }
-
-    /**
-     * @param {CustomGroupName} group
-     * @param {string} assetName
-     * @returns {string}
-     */
-    static assetPreview(group, assetName) {
-        return `Assets/Female3DCG/${group}/Preview/${assetName}.png`;
-    }
-
-    /**
-     * @param {CustomGroupName} group
-     * @param {string} assetName
-     * @param {string} optionName
-     * @returns {string}
-     */
-    static assetOption(group, assetName, optionName) {
-        return `Screens/Inventory/${group}/${assetName}/${optionName}.png`;
     }
 }
 
