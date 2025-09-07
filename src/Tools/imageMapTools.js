@@ -106,8 +106,8 @@ export class ImageMapTools {
 
             const groups = Array.isArray(group) ? group : [group];
 
-            for (const poseSeg of poseSegs) {
-                for (const g of groups) {
+            for (const g of groups) {
+                for (const poseSeg of poseSegs) {
                     for (const toType of to) {
                         for (const layerType of layerTypeSegs) {
                             ret[path(g, poseSeg, toType, layerType)] = path(
