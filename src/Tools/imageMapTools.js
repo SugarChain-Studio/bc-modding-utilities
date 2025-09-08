@@ -19,25 +19,57 @@ function poseMappingSegments(poseMapping) {
  */
 
 /**
- * @param {string} layerTypes
- * @param {ExtendedItemConfig<TypedItemOption>} config
+ * @param {CustomAssetDefinition["Layer"][0]} layer
+ * @param {ExtendedItemConfig<TypedItemOption> | undefined} config
  * @returns {string[]}
  */
-function layerTypesSegs(layerTypes, config) {
-    if (config.Archetype === "modular") {
-        return /** @type {ModularItemConfig} */ (
-            /** @type {any}*/ (config)
-        ).Modules.filter((m) => layerTypes === m.Key).flatMap((m) =>
-            m.Options.map((_, i) => `${m.Key}${i}`)
-        );
-    } else if (config.Archetype === "typed" && layerTypes === "typed") {
-        return /** @type {TypedItemConfig} */ (config).Options.map(
-            (_, i) => `typed${i}`
-        );
+function layerTypesSegs(layer, config) {
+    const layerType = layer.CreateLayerTypes?.[0];
+    if (!layerType) return [];
+    const allowed = layer.AllowTypes;
+
+    if (allowed) {
+        const segs = new Set();
+        (Array.isArray(allowed) ? allowed : [allowed])
+            .map((at) => at[layerType])
+            .filter(Boolean)
+            .forEach((v) => {
+                if (typeof v === "number") {
+                    segs.add(v);
+                } else if (Array.isArray(v)) {
+                    v.forEach((vv) => segs.add(vv));
+                }
+            });
+        return Array.from(segs, (v) => `${layerType}${v}`);
+    } else if (config) {
+        if (config.Archetype === "modular") {
+            return /** @type {ModularItemConfig} */ (
+                /** @type {any}*/ (config)
+            ).Modules.filter((m) => layerType === m.Key).flatMap((m) =>
+                m.Options.map((_, i) => `${m.Key}${i}`)
+            );
+        } else if (config.Archetype === "typed" && layerType === "typed") {
+            return /** @type {TypedItemConfig} */ (config).Options.map(
+                (_, i) => `typed${i}`
+            );
+        }
     }
     return [];
 }
 
+/**
+ * @typedef {["Preview", CustomGroupName, string]} ImageMapPreview
+ * @typedef {["Option", CustomGroupName, string, string]} ImageMapOption
+ * @typedef {["Layer", CustomGroupName, string]} ImageMapLayer
+ */
+
+/**
+ * @typedef {ImageMapPreview | ImageMapOption | ImageMapLayer} ImageMapType
+ */
+
+/**
+ * 工具类，提供一些静态方法来生成图片路径和ImageMapping对象
+ */
 export class ImageMapTools {
     /**
      * @param {CustomGroupName} group
@@ -68,12 +100,31 @@ export class ImageMapTools {
     }
 
     /**
+     * @param {ImageMapType} from
+     * @param {ImageMapType} to
+     */
+    static mappingPath(from, to) {
+        const getPath = (im) => {
+            switch (im[0]) {
+                case "Preview":
+                    return ImageMapTools.assetPreview(im[1], im[2]);
+                case "Option":
+                    return ImageMapTools.assetOption(im[1], im[2], im[3]);
+                case "Layer":
+                    return ImageMapTools.assetLayer(im[1], im[2]);
+            }
+        };
+        return { [getPath(to)]: getPath(from) };
+    }
+
+    /**
      * 产生一个可以用于ImageMapping的映射对象，用于将某个BodyType的图片映射到其他的BodyType
+     * 只支持CreateLayerTypes长度为1的情况
      * @param {CustomGroupName| CustomGroupName[]} group 物品所在的组
      * @param {CustomAssetDefinition} asset 物品定义
      * @param {BodyTypes} from 映射的来源类型
      * @param {FullBodyTypes[]} to 映射的目标类型
-     * @param {ExtendedItemConfig<TypedItemOption>} [config] 如果包含CreateLayerTypes字段，则需要此参数来获取类型，只支持CreateLayerTypes长度为1的情况
+     * @param {ExtendedItemConfig<TypedItemOption>} [config] 如果包含CreateLayerTypes字段，首先会尝试从AllowTypes中获取类型。如果AllowTypes没有相关描述，则需要此参数来获取类型
      * @returns { Record<string,string> } 映射对象
      */
     static mirrorBodyTypeLayer(group, asset, from, to, config) {
@@ -88,10 +139,7 @@ export class ImageMapTools {
 
             const poseSegs = poseMappingSegments(poseMapping);
 
-            const layerTypeSegs =
-                layer.CreateLayerTypes && config
-                    ? layerTypesSegs(layer.CreateLayerTypes[0], config)
-                    : [];
+            const layerTypeSegs = layerTypesSegs(layer, config);
             if (layerTypeSegs.length === 0) layerTypeSegs.push("");
 
             const path = (g, poseSeg, file, layerType) =>
