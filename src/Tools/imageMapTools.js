@@ -74,10 +74,13 @@ export class ImageMapTools {
     /**
      * @param {CustomGroupName} group
      * @param {string} layerName
+     * @param {AssetPoseName} [pose]
      * @returns {string}
      */
-    static assetLayer(group, layerName) {
-        return `Assets/Female3DCG/${group}/${layerName}.png`;
+    static assetLayer(group, layerName, pose) {
+        return `Assets/Female3DCG/${group}/${
+            pose ? `${pose}/` : ""
+        }${layerName}.png`;
     }
 
     /**
