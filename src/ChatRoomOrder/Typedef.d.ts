@@ -67,3 +67,6 @@ type DrawOffsetFunction = (
     C: Character,
     from: DrawOffsetParam
 ) => DrawOffsetParam | void;
+
+type CustomAssetDefinition =
+    import('@sugarch/bc-mod-types').CustomAssetDefinition<CustomGroupName>;
