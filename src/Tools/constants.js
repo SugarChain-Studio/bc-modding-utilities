@@ -1,3 +1,31 @@
+/**
+ * 所有上半身动作都隐藏的 PoseMapping
+ * @type {Readonly<AssetPoseMapping>}
+ */
+const PoseHideTop = {
+    // "BaseUpper" | "BackBoxTie" | "BackCuffs" | "BackElbowTouch" | "OverTheHead" | "Yoked" | "TapedHands"
+    BaseUpper: PoseType.HIDE,
+    BackBoxTie: PoseType.HIDE,
+    BackCuffs: PoseType.HIDE,
+    BackElbowTouch: PoseType.HIDE,
+    OverTheHead: PoseType.HIDE,
+    Yoked: PoseType.HIDE,
+};
+
+/**
+ * 所有下半身动作都隐藏的 PoseMapping
+ * @type {Readonly<AssetPoseMapping>}
+ */
+const PoseHideBottom = {
+    // "BaseLower" | "Kneel" | "KneelingSpread" | "LegsClosed" | "LegsOpen" | "Spread"
+    BaseLower: PoseType.HIDE,
+    Kneel: PoseType.HIDE,
+    KneelingSpread: PoseType.HIDE,
+    LegsClosed: PoseType.HIDE,
+    LegsOpen: PoseType.HIDE,
+    Spread: PoseType.HIDE,
+};
+
 export const Constants = {
     /**
      * 常用文本标签，包括源角色、目标角色、目标角色（所有格）、物品名称
@@ -15,13 +43,7 @@ export const Constants = {
      * @type {Readonly<AssetPoseMapping>}
      */
     PoseHideAll: {
-        // "BaseUpper" | "BackBoxTie" | "BackCuffs" | "BackElbowTouch" | "OverTheHead" | "Yoked" | "TapedHands"
-        BaseUpper: PoseType.HIDE,
-        BackBoxTie: PoseType.HIDE,
-        BackCuffs: PoseType.HIDE,
-        BackElbowTouch: PoseType.HIDE,
-        OverTheHead: PoseType.HIDE,
-        Yoked: PoseType.HIDE,
+        ...PoseHideTop,
 
         // "BaseLower" | "Kneel" | "KneelingSpread" | "LegsClosed" | "LegsOpen" | "Spread"
         BaseLower: PoseType.HIDE,
@@ -35,4 +57,7 @@ export const Constants = {
         Hogtied: PoseType.HIDE,
         AllFours: PoseType.HIDE,
     },
+
+    PoseHideTop,
+    PoseHideBottom,
 };

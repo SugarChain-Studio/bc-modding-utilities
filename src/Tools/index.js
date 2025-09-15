@@ -210,6 +210,26 @@ export class PoseMapTools {
     }
 
     /**
+     * 合成姿势映射，基础数据是所有上半身姿势都隐藏。根据参数补充显示的姿势。
+     *
+     * @param {AssetPoseMapping} posem 用于合成的姿势映射
+     * @returns {AssetPoseMapping}
+     */
+    static FromTopHide(posem) {
+        return { ...Constants.PoseHideTop, ...posem };
+    }
+
+    /**
+     * 合成姿势映射，基础数据是所有下半身姿势都隐藏。根据参数补充显示的姿势。
+     *
+     * @param {AssetPoseMapping} posem 用于合成的姿势映射
+     * @returns {AssetPoseMapping}
+     */
+    static FromBottomHide(posem) {
+        return { ...Constants.PoseHideBottom, ...posem };
+    }
+
+    /**
      * 合成姿势映射，隐藏AllFours和Hogtied
      *
      * @example
