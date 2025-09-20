@@ -105,17 +105,6 @@ export class DialogTools {
     }
 
     /**
-     * 生成定制对话生成器
-     * @param {string} prefix 前缀
-     * @returns { (...details: any[]) => string }
-     */
-    static makeCustomDialogGenerator(prefix) {
-        const fprefix = `${CustomDialogPrefix}${prefix}`;
-        return (...details) =>
-            `${fprefix}${details.map((v) => v.toString()).join("")}`;
-    }
-
-    /**
      * 生成定制对话，不含有物品组名
      * @param {string[]} assetNames 物品名
      * @param {Translation.Dialog} dialogPrototye
@@ -132,25 +121,6 @@ export class DialogTools {
             }
             return pv;
         }, /** @type {Translation.Dialog} */ ({}));
-    }
-
-    /**
-     * 从 语言-身体组-条目 的翻译字典中提取出 语言-条目 的翻译
-     * 从 { CN: { Cloth: { MyItem: "我的物品" } }} 这样的字典中提取出 { CN: { MyItem: "我的物品" } } 时很有用
-     * @template {string} GroupName
-     * @param { Partial<Record<ServerChatRoomLanguage, Partial<Record<GroupName, Record<string,string>>>>> } translations 翻译字典
-     * @param { GroupName } group 身体组
-     * @param { string } entry 条目
-     * @returns { Translation.Entry } 条目翻译
-     */
-    static pickDialog(translations, group, entry) {
-        const result = {};
-        for (const lang in translations) {
-            if (translations[lang][group] && translations[lang][group][entry]) {
-                result[lang] = translations[lang][group][entry];
-            }
-        }
-        return result;
     }
 
     /**
@@ -254,5 +224,62 @@ export class DialogTools {
             assetName = Asset.Name;
         }
         return (Key) => `${groupName}${assetName}${Key}`;
+    }
+    /**
+     * 生成显示/隐藏的对话文本
+     * @param {Object} param0
+     * @param {string} param0.moduleName 模块名称
+     * @param {string} param0.key 模块键值
+     * @param {Translation.Entry} param0.moduleText 模块显示名称
+     * @param {Translation.Entry} [param0.fullText] 模块完整显示名称，除了按钮文本只使用moduleText外，其他地方优先使用fullText
+     * @param {boolean} [param0.reverse] 是否反转选项
+     * @returns
+     */
+    static showHide({ moduleName, key, moduleText, fullText, reverse }) {
+        const showV = reverse ? 1 : 0;
+        const hideV = reverse ? 0 : 1;
+
+        const fullText_ = {
+            CN: fullText?.CN || moduleText.CN,
+            EN: fullText?.EN || moduleText.EN,
+        };
+
+        const CN = {
+            [`Module${moduleName}`]: `显示/隐藏${moduleText.CN}`,
+            [`Select${moduleName}`]: `设置显示/隐藏${fullText_.CN}`,
+            [`Option${key}${showV}`]: "显示",
+            [`Option${key}${hideV}`]: "隐藏",
+            [`Set${key}${showV}`]: `SourceCharacter使DestinationCharacterAssetName会露出${fullText_.CN}`,
+            [`Set${key}${hideV}`]: `SourceCharacter使DestinationCharacterAssetName会隐藏${fullText_.CN}`,
+        };
+
+        const EN = {
+            [`Module${moduleName}`]: `Show/Hide ${moduleText.EN}`,
+            [`Select${moduleName}`]: `Set Show/Hide ${fullText_.EN}`,
+            [`Option${key}${showV}`]: "Show",
+            [`Option${key}${hideV}`]: "Hide",
+            [`Set${key}${showV}`]: `SourceCharacter makes DestinationCharacter AssetName reveal the ${fullText_.EN}.`,
+            [`Set${key}${hideV}`]: `SourceCharacter makes DestinationCharacter AssetName hide the ${fullText_.EN}.`,
+        };
+
+        return { CN, EN };
+    }
+
+    /**
+     * 将多个物品对话合并
+     * @param  {...Translation.Dialog} args
+     * @returns {Translation.Dialog}
+     */
+    static combine(...args) {
+        return args.reduce(
+            (acc, cur) =>
+                Object.fromEntries(
+                    Object.entries(cur).map(([lang, entries]) => [
+                        lang,
+                        { ...(acc[lang] || {}), ...entries },
+                    ])
+                ),
+            { CN: {}, EN: {} }
+        );
     }
 }
