@@ -49,7 +49,7 @@ export function setXDrawState(data) {
 export function setupSync() {
     HookManager.hookFunction("ChatRoomSync", 10, (args, next) => {
         setSync();
-        next(args);
+        return next(args);
     });
 
     HookManager.hookFunction("ChatRoomSyncMemberJoin", 10, (args, next) => {
