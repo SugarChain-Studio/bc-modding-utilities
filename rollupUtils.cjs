@@ -48,7 +48,12 @@ function collectComponents(componentsDir, baseDir, importStartDir) {
                     const content = fs
                         .readFileSync(`${dir}/${file.name}`, "utf8")
                         .replace(/\/\/.*\n?|\/\*.*\*\//gm, "");
-                    if (!content.match(/export\s+default\s+(function\s*\(|\(\s*\)|\w+)/)) return;
+                    if (
+                        !content.match(
+                            /export\s+default\s+(function\s*\(|\(\s*\)|\w+)/
+                        )
+                    )
+                        return;
                     const fileName = file.name.replace(".js", "");
                     files.push({ name: fileName, path: `${rDir}/${fileName}` });
                 }
@@ -82,7 +87,8 @@ function buildRollupSetting(packageObj, env) {
     const ret = { ...packageObj.rollupSetting };
     if (env.beta) {
         ret.output = packageObj.rollupSetting.beta.output ?? ret.output;
-        ret.loaderName = packageObj.rollupSetting.beta.loaderName ?? ret.loaderName;
+        ret.loaderName =
+            packageObj.rollupSetting.beta.loaderName ?? ret.loaderName;
     }
     ret.author = packageObj.author;
     ret.description = packageObj.description;
@@ -98,7 +104,9 @@ function buildRollupSetting(packageObj, env) {
  * @returns { Promise<AssetOverrideContainer> } 资源映射表
  */
 async function readAssetsMapping(startDir, assetDirs) {
-    const git_root = execSync("git rev-parse --show-toplevel").toString().trim();
+    const git_root = execSync("git rev-parse --show-toplevel")
+        .toString()
+        .trim();
 
     /** @type {AssetOverrideContainer} */
     const assets = {};
@@ -132,7 +140,8 @@ async function readAssetsMapping(startDir, assetDirs) {
         }
 
         const file = dirs[0];
-        if (typeof curDir[file] !== "string" || override) curDir[file] = version;
+        if (typeof curDir[file] !== "string" || override)
+            curDir[file] = version;
     };
 
     const process_line = (line) => {
@@ -144,9 +153,19 @@ async function readAssetsMapping(startDir, assetDirs) {
     const promises = assetDirs
         .map((dir) => path.join(startDir, dir))
         .map((dir) => {
-            const ls_tree = spawn("git", ["ls-tree", "--format=%(objectname)%x09%(path)", "-r", "HEAD", dir], {
-                cwd: git_root,
-            });
+            const ls_tree = spawn(
+                "git",
+                [
+                    "ls-tree",
+                    "--format=%(objectname)%x09%(path)",
+                    "-r",
+                    "HEAD",
+                    dir,
+                ],
+                {
+                    cwd: git_root,
+                }
+            );
 
             let prev_unfinished = Buffer.alloc(0);
 
@@ -164,7 +183,8 @@ async function readAssetsMapping(startDir, assetDirs) {
 
             return new Promise((resolve, reject) => {
                 ls_tree.on("exit", () => {
-                    if (prev_unfinished && prev_unfinished.length > 0) process_line(prev_unfinished.toString());
+                    if (prev_unfinished && prev_unfinished.length > 0)
+                        process_line(prev_unfinished.toString());
                     resolve();
                 });
                 ls_tree.on("error", reject);
@@ -177,7 +197,9 @@ async function readAssetsMapping(startDir, assetDirs) {
 
     // 发生修改的文件使用时间戳作为版本号
     await new Promise((resolve, reject) => {
-        const status = spawn("git", ["status", "--porcelain", startDir], { cwd: git_root });
+        const status = spawn("git", ["status", "--porcelain", startDir], {
+            cwd: git_root,
+        });
 
         let prev_unfinished = Buffer.alloc(0);
 
@@ -185,22 +207,32 @@ async function readAssetsMapping(startDir, assetDirs) {
             if (line.length < 4) return;
             const status = line.substring(0, 2);
             if ([" M", "M ", "R ", "??", "A "].includes(status)) {
-                const line_path_part = status === "R " ? line.substring(3).split(" -> ")[1] : line.substring(3);
+                const line_path_part =
+                    status === "R "
+                        ? line.substring(3).split(" -> ")[1]
+                        : line.substring(3);
 
                 const fpath = path
                     .relative(
                         startDir,
-                        ((src) => (src.startsWith('"') ? src.substring(1, src.length - 1) : src))(line_path_part)
+                        ((src) =>
+                            src.startsWith('"')
+                                ? src.substring(1, src.length - 1)
+                                : src)(line_path_part)
                     )
                     .replace(/\\/g, "/");
 
                 if (!fpath.endsWith(".png")) return;
-                console.warn(`[WARN] [${fpath}] is not in version control, using timestamp as version`);
+                console.warn(
+                    `[WARN] [${fpath}] is not in version control, using timestamp as version`
+                );
                 addAssetCache(fpath, timeStr, true);
             } else if (status === " D" || status === "D ") {
                 const fpath = path.relative(startDir, line.substring(3));
                 removeAssetCache(fpath);
-                console.warn(`[WARN] [${fpath}] has been removed from version control`);
+                console.warn(
+                    `[WARN] [${fpath}] has been removed from version control`
+                );
             }
         };
 
@@ -218,7 +250,8 @@ async function readAssetsMapping(startDir, assetDirs) {
         });
 
         status.on("exit", () => {
-            if (prev_unfinished && prev_unfinished.length > 0) process_git_status(prev_unfinished.toString());
+            if (prev_unfinished && prev_unfinished.length > 0)
+                process_git_status(prev_unfinished.toString());
             resolve();
         });
         status.on("error", reject);
@@ -231,11 +264,15 @@ async function readAssetsMapping(startDir, assetDirs) {
 
 function getLatestSemverTag(packageObj) {
     try {
-        const ret = execSync("git describe --tags --abbrev=0").toString().trim();
+        const ret = execSync("git describe --tags --abbrev=0")
+            .toString()
+            .trim();
         return ret.startsWith("v") ? ret.substring(1) : ret;
     } catch (e) {
         if (packageObj.version) return packageObj.version;
-        console.warn("[WARN] No git tag found, nor version in package.json, using v0.0.0 as version");
+        console.warn(
+            "[WARN] No git tag found, nor version in package.json, using v0.0.0 as version"
+        );
         return "0.0.0";
     }
 }
@@ -251,9 +288,12 @@ function buildModInfo(packageObj) {
         fullName: `${packageObj.modFullName}`,
         version: getLatestSemverTag(packageObj),
         repo: (() => {
-            if (!packageObj.repository || !packageObj.repository.url) return undefined;
+            if (!packageObj.repository || !packageObj.repository.url)
+                return undefined;
             if (packageObj.repository.url.startsWith("git+"))
-                return `${packageObj.repository.url.replace("git+", "").replace(".git", "")}`;
+                return `${packageObj.repository.url
+                    .replace("git+", "")
+                    .replace(".git", "")}`;
             return `${packageObj.repository.url.replace(".git", "")}`;
         })(),
     };
@@ -271,20 +311,27 @@ function buildModInfo(packageObj) {
  */
 async function createReplaceRecord({ env, modInfo, rollupSetting }) {
     const componentsImports = rollupSetting.componentDir
-        ? collectComponents(rollupSetting.componentDir, env.curDir, rollupSetting.componentDir)
+        ? collectComponents(
+              rollupSetting.componentDir,
+              env.curDir,
+              rollupSetting.componentDir
+          )
         : { imports: "", setups: "" };
 
     const betaString = env.beta ? "-beta" : "";
 
     const versionString = (() => {
-        if (env.beta && !modInfo.version.includes("beta")) return `${modInfo.version}-beta`;
+        if (env.beta && !modInfo.version.includes("beta"))
+            return `${modInfo.version}-beta`;
         return modInfo.version;
     })();
 
     return {
         loaderReplace: {
             __base_url__: `${
-                env.baseURL.endsWith("/") ? env.baseURL.substring(0, env.baseURL.length - 1) : env.baseURL
+                env.baseURL.endsWith("/")
+                    ? env.baseURL.substring(0, env.baseURL.length - 1)
+                    : env.baseURL
             }`,
             __description__: rollupSetting.description,
             __name__: `${modInfo.name}${betaString}`,
@@ -313,9 +360,16 @@ async function createReplaceRecord({ env, modInfo, rollupSetting }) {
  * @param {object} param0.rollupSetting rollup设置
  */
 async function writeAssetOverrides({ env, rollupSetting }) {
-    const assetMappings = await readAssetsMapping(rollupSetting.assets.location, rollupSetting.assets.assets);
-    if (!fs.existsSync(env.resourceDir)) fs.mkdirSync(env.resourceDir, { recursive: true });
-    fs.writeFileSync(`${env.resourceDir}assetOverrides.json`, JSON.stringify(assetMappings));
+    const assetMappings = await readAssetsMapping(
+        rollupSetting.assets.location,
+        rollupSetting.assets.assets
+    );
+    if (!fs.existsSync(env.resourceDir))
+        fs.mkdirSync(env.resourceDir, { recursive: true });
+    fs.writeFileSync(
+        `${env.resourceDir}assetOverrides.json`,
+        JSON.stringify(assetMappings)
+    );
 }
 
 /**
@@ -350,7 +404,7 @@ async function createModRollupConfig({ env, packageJSON, banner = "" }) {
         },
         treeshake: true,
         external: [
-            "https://cdn.jsdelivr.net/npm/sweetalert2@11.6.13/+esm",
+            "https://cdn.jsdelivr.net/npm/sweetalert2@11.23.0/+esm",
             "https://cdn.jsdelivr.net/npm/bondage-club-mod-sdk@1.2.0/dist/bcmodsdk.js",
         ],
     });
