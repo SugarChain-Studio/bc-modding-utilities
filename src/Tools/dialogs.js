@@ -143,7 +143,7 @@ export class DialogTools {
      *
      * @param {Translation.String} assetStrings
      * @param {ModularItemConfig | TypedItemConfig} config
-     * @param {Translation.CNRecord<(from: string) => string>} [sets] SetX 文本生成器
+     * @param {Translation.CNRecord<(from: string, langStrings: Record<string,string>) => string>} [sets] SetX 文本生成器
      */
     static autoItemStrings(assetStrings, config, sets) {
         /** @type {Translation.String} */
@@ -170,17 +170,19 @@ export class DialogTools {
         }
 
         const krder = sets || {
-            CN: (from) =>
-                `SourceCharacter将DestinationCharacterAssetName设置为${assetStrings["CN"][from]}`,
-            EN: (from) =>
-                `SourceCharacter sets DestinationCharacter AssetName to ${assetStrings["EN"][from]}`,
+            CN: (from, strings) =>
+                `SourceCharacter将DestinationCharacterAssetName设置为${strings[from]}`,
+            EN: (from, strings) =>
+                `SourceCharacter sets DestinationCharacter AssetName to ${strings[from]}`,
         };
 
         for (const lang in assetStrings) {
             ret[lang] = { ...assetStrings[lang] };
             if (lang in krder) {
                 keys.forEach(({ from, to }) => {
-                    ret[lang][to] = krder[lang](from) || krder["CN"](from);
+                    ret[lang][to] =
+                        krder[lang](from, assetStrings[lang]) ||
+                        krder["CN"](from, assetStrings["CN"]);
                 });
             }
         }
