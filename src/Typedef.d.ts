@@ -63,6 +63,8 @@ declare namespace Translation {
         T extends string,
         U
     > = import('@sugarch/bc-mod-types').Translation.CustomRecord<T, U>;
+
+    type CNRecord<T> = Omit<Record<TranslationLanguage, T>, 'CN'> & { CN: T };
 }
 
 type AssetOverrideContainer =

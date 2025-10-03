@@ -143,8 +143,9 @@ export class DialogTools {
      *
      * @param {Translation.String} assetStrings
      * @param {ModularItemConfig | TypedItemConfig} config
+     * @param {Translation.CNRecord<(from: string) => string>} [sets] SetX 文本生成器
      */
-    static autoItemStrings(assetStrings, config) {
+    static autoItemStrings(assetStrings, config, sets) {
         /** @type {Translation.String} */
         const ret = {};
 
@@ -168,7 +169,7 @@ export class DialogTools {
             );
         }
 
-        const krder = {
+        const krder = sets || {
             CN: (from) =>
                 `SourceCharacter将DestinationCharacterAssetName设置为${assetStrings["CN"][from]}`,
             EN: (from) =>
@@ -179,7 +180,7 @@ export class DialogTools {
             ret[lang] = { ...assetStrings[lang] };
             if (lang in krder) {
                 keys.forEach(({ from, to }) => {
-                    ret[lang][to] = krder[lang](from);
+                    ret[lang][to] = krder[lang](from) || krder["CN"](from);
                 });
             }
         }
