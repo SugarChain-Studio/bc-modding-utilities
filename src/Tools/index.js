@@ -82,70 +82,18 @@ export class Tools {
     }
 
     /**
-     * 调整TopLeft数据工具函数，注意这个函数不会修改原始数据
-     * @param {TopLeft.Data} data 原始数据
-     * @param {number | Partial<Record<AssetPoseName | PoseTypeDefault, number>>} diff 偏差值
-     * @returns {TopLeft.Data} 调整后的数据
-     */
-    static topLeftAdjust(data, diff) {
-        if (typeof diff === "number") {
-            return /** @type {TopLeft.Data}*/ (
-                Object.fromEntries(
-                    Object.entries(data).map(([key, value]) => [
-                        key,
-                        value + diff,
-                    ])
-                )
-            );
-        } else {
-            return /** @type {TopLeft.Data}*/ (
-                Object.fromEntries(
-                    Object.entries(data).map(([key, value]) => [
-                        key,
-                        value + (diff[key] ?? 0),
-                    ])
-                )
-            );
-        }
-    }
-
-    /**
      * 构建TopLeft数据工具函数
-     * @param  {...[AssetPoseName | PoseTypeDefault, { Top:number, Left:number }]} args
+     * @param {{ Top:number, Left:number }} basePos 基础位置
+     * @param  {...[AssetPoseName, { Top?:number, Left?:number }]} args
      * @returns {Pick<AssetDefinition, "Left" | "Top">}
      */
-    static topLeftBuilder(...args) {
-        const result = { Left: {}, Top: {} };
+    static topLeftBuilder(basePos, ...args) {
+        const result = { Left: { "": basePos.Left }, Top: { "": basePos.Top } };
         for (const [pose, pos] of args) {
-            result.Left[pose] = pos.Left;
-            result.Top[pose] = pos.Top;
+            if (pos.Left !== undefined) result.Left[pose] = pos.Left;
+            if (pos.Top !== undefined) result.Top[pose] = pos.Top;
         }
         return result;
-    }
-
-    /**
-     * 覆写TopLeft数据工具函数，注意这个函数不会修改原始数据
-     * @param {TopLeft.Data} data 原始数据
-     * @param {number | Partial<Record<AssetPoseName | PoseTypeDefault, number>>} over 覆盖值
-     * @returns {TopLeft.Data} 覆盖后的数据
-     */
-    static topLeftOverride(data, over) {
-        if (typeof over === "number") {
-            return /** @type {TopLeft.Data}*/ (
-                Object.fromEntries(
-                    Object.entries(data).map(([key, _]) => [key, over])
-                )
-            );
-        } else {
-            return /** @type {TopLeft.Data}*/ (
-                Object.fromEntries(
-                    Object.entries(data).map(([key, value]) => [
-                        key,
-                        over[key] ?? value,
-                    ])
-                )
-            );
-        }
     }
 
     /**
