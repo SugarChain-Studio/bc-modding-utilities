@@ -110,6 +110,20 @@ export class Tools {
     }
 
     /**
+     * 构建TopLeft数据工具函数
+     * @param  {...[AssetPoseName | PoseTypeDefault, { Top:number, Left:number }]} args
+     * @returns {Pick<AssetDefinition, "Left" | "Top">}
+     */
+    static topLeftBuilder(...args) {
+        const result = { Left: {}, Top: {} };
+        for (const [pose, pos] of args) {
+            result.Left[pose] = pos.Left;
+            result.Top[pose] = pos.Top;
+        }
+        return result;
+    }
+
+    /**
      * 覆写TopLeft数据工具函数，注意这个函数不会修改原始数据
      * @param {TopLeft.Data} data 原始数据
      * @param {number | Partial<Record<AssetPoseName | PoseTypeDefault, number>>} over 覆盖值
