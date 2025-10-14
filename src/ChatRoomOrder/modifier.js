@@ -2,17 +2,6 @@ import { Optional } from "../monadic";
 import { DrawCharacterModifier } from "./drawOffset";
 import { ChatRoomOrder } from "./roomOrder";
 
-/**
- * @typedef {ReturnType<ChatRoomOrder["requireSharedCenter"]>} SharedCenterState
- */
-
-/**
- * @typedef {Object} CtxDrawMods
- * @property {SharedCenterState} sharedC
- * @property {DrawOffsetParam} initState
- * @property {Character} C
- */
-
 export const SharedCenterModifier = DrawCharacterModifier.createPrereq((C) =>
     ChatRoomOrder.requireSharedCenter(C)
 );
@@ -30,27 +19,90 @@ const drawModBase = (requireState, call) => (sharedC, C, initState) =>
         .valueOr(() => initState);
 
 /**
- * @param {(arg0: XCharaPairTimerState, arg1: CtxDrawMods)=> DrawOffsetParam | undefined} call
+ * @template T
+ * @param {"prev"| "next" |"center" | "unchanged"} base
+ * @param { {X:number, Y:number, Zoom?:number} } [offset]
+ * @returns {DrawModifierCallback<T>}
+ */
+function modifierBuilder(base, offset = { X: 0, Y: 0 }) {
+    return (_, { sharedC, initState }) => {
+        const zoom = offset.Zoom === undefined ? initState.Zoom : offset.Zoom;
+        switch (base) {
+            case "prev": {
+                return {
+                    X: sharedC.where.prev.X + offset.X * zoom,
+                    Y: sharedC.where.prev.Y + offset.Y * zoom,
+                    Zoom: zoom,
+                };
+            }
+            case "next": {
+                return {
+                    X: sharedC.where.next.X + offset.X * zoom,
+                    Y: sharedC.where.next.Y + offset.Y * zoom,
+                    Zoom: zoom,
+                };
+            }
+            case "center": {
+                return {
+                    X: sharedC.center.X + offset.X * zoom,
+                    Y: sharedC.center.Y + offset.Y * zoom,
+                    Zoom: zoom,
+                };
+            }
+            case "unchanged": {
+                return initState;
+            }
+        }
+    };
+}
+
+/**
+ * @typedef {Parameters<typeof modifierBuilder>} ModifierCallbackParam
+ */
+
+/**
+ * @template T
+ * @param {DrawModifierCallback<T> | ModifierCallbackParam} bePrev
+ * @param {DrawModifierCallback<T> | ModifierCallbackParam} beNext
+ * @returns {DrawModifierCallback<T>}
+ */
+const generalBranchF = (bePrev, beNext) => (state, ctx) => {
+    const { sharedC, C } = ctx;
+    if (sharedC.prev.MemberNumber === C.MemberNumber)
+        return (
+            typeof bePrev === "function" ? bePrev : modifierBuilder(...bePrev)
+        )(state, ctx);
+    else if (sharedC.next.MemberNumber === C.MemberNumber)
+        return (
+            typeof beNext === "function" ? beNext : modifierBuilder(...beNext)
+        )(state, ctx);
+};
+
+/**
+ * @param { Parameters<ChatRoomOrder["requirePairAssetState"]>[1] } items
+ * @param { DrawModifierCallback<XCharaPairAssetState> | ModifierCallbackParam } bePrev
+ * @param { DrawModifierCallback<XCharaPairAssetState> | ModifierCallbackParam } beNext
  * @returns {(sharedC:SharedCenterState, C: Character, arg: DrawOffsetParam) => DrawOffsetParam}
  */
-const timerDrawModFunction = (call) =>
+const assetDrawMod = (items, bePrev, beNext) =>
     drawModBase(
-        (sharedC) => ChatRoomOrder.requirePairTimerState(sharedC),
-        call
+        (sharedC) => ChatRoomOrder.requirePairAssetState(sharedC, items),
+        generalBranchF(bePrev, beNext)
     );
 
 /**
- * @param {(arg0: XCharaPairAssetState, arg1: CtxDrawMods)=> DrawOffsetParam | undefined} call
- * @param { Parameters<ChatRoomOrder["requirePairAssetState"]>[1] } items
+ * @param { DrawModifierCallback<XCharaPairTimerState> | ModifierCallbackParam } bePrev
+ * @param { DrawModifierCallback<XCharaPairTimerState> | ModifierCallbackParam } beNext
  * @returns {(sharedC:SharedCenterState, C: Character, arg: DrawOffsetParam) => DrawOffsetParam}
  */
-const assetDrawModFunction = (items, call) =>
+const timerDrawMod = (bePrev, beNext) =>
     drawModBase(
-        (sharedC) => ChatRoomOrder.requirePairAssetState(sharedC, items),
-        call
+        (sharedC) => ChatRoomOrder.requirePairTimerState(sharedC),
+        generalBranchF(bePrev, beNext)
     );
 
 export const DrawMods = {
-    asset: assetDrawModFunction,
-    timer: timerDrawModFunction,
+    asset: assetDrawMod,
+    timer: timerDrawMod,
+    builder: modifierBuilder,
 };

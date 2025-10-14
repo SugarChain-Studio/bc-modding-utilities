@@ -70,3 +70,21 @@ type DrawOffsetFunction = (
 
 type CustomAssetDefinition =
     import('@sugarch/bc-mod-types').CustomAssetDefinition<CustomGroupName>;
+
+type SharedCenterState = {
+    prev: XCharacter;
+    next: XCharacter;
+    center: { X: number; Y: number };
+    where: { prev: XCharacterDrawState; next: XCharacterDrawState };
+};
+
+type CtxDrawMods = {
+    sharedC: SharedCenterState;
+    initState: DrawOffsetParam;
+    C: Character;
+};
+
+type DrawModifierCallback<T> = (
+    arg0: T,
+    arg1: CtxDrawMods
+) => DrawOffsetParam | undefined;

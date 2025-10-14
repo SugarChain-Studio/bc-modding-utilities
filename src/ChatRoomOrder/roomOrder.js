@@ -71,7 +71,7 @@ class ChatRoomOrder_ {
     /**
      * 如果两个人物被设置为配对绘制，返回两个人物和参考中心
      * @param {Character} C
-     * @returns {{prev:XCharacter, next:XCharacter, center:{X:number,Y:number}, where:{prev:XCharacterDrawState, next:XCharacterDrawState}} | undefined} 如果没找到，返回undefined
+     * @returns {SharedCenterState | undefined} 如果没找到，返回undefined
      */
     requireSharedCenter(C) {
         const pair = findDrawOrderPair(C, ChatRoomCharacterDrawlist);

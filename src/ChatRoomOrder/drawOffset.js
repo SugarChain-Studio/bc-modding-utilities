@@ -54,10 +54,10 @@ class ModifiersWithPrereq {
     }
 
     /**
-     * @param {DrawOffsetPrereqFunction} modifier
+     * @param {...DrawOffsetPrereqFunction} modifier
      */
-    addModifier(modifier) {
-        this.modifiers.push(modifier);
+    addModifier(...modifier) {
+        this.modifiers.push(...modifier);
     }
 }
 
