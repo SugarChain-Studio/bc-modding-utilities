@@ -1,6 +1,5 @@
 import { ChatRoomOrder } from "./roomOrder";
 import { Pick } from "./checks";
-import { Tools } from "../Tools";
 
 class _ChatRoomOrderTools {
     /**
