@@ -285,4 +285,20 @@ export class DialogTools {
             { CN: {}, EN: {} }
         );
     }
+
+    /**
+     * 生成模块设置对话文本
+     * @param {string} moduleKey
+     * @param {string[]} optionFields
+     * @param {(field:string, index:number)=>string} generator
+     * @returns
+     */
+    static modularSetMessage(moduleKey, optionFields, generator) {
+        return Object.fromEntries(
+            optionFields.map((field, index) => [
+                `Set${moduleKey}${index}`,
+                generator(field, index),
+            ])
+        );
+    }
 }
