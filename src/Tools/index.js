@@ -1,3 +1,4 @@
+import { Optional } from "@mod-utils/monadic";
 import { Constants } from "./constants";
 import { DialogTools } from "./dialogs";
 import { StateTools } from "./state";
@@ -40,6 +41,22 @@ export { DialogTools };
 export { StateTools };
 
 export class Tools {
+    /**
+     * 查找角色
+     * @template {string} K
+     * @param {K} key
+     * @param {number} memberNumber
+     */
+    static findCharacter(key, memberNumber) {
+        const c = ChatRoomCharacter.find(
+            (c) => c.MemberNumber === memberNumber
+        );
+        return new Optional(
+            c,
+            /** @type {{[k in K]: Character}}*/ ({ [key]: c })
+        );
+    }
+
     /**
      * 所有物品身体组
      * @param {AssetGroupItemName[]} excepts
