@@ -10,43 +10,50 @@ declare const __mod_debug_flag__: boolean;
 declare const __mod_rollup_imports__: string[];
 declare const __mod_rollup_setup__: string[];
 
+namespace details {
+    type StrictCustomGroupBodyName =
+        | '新前发_Luzi'
+        | '新前发_Luzi_stack'
+        | '新后发_Luzi'
+        | '新后发_Luzi_stack'
+        | '额外头发_Luzi'
+        | 'Liquid2_Luzi'
+        | '身体痕迹_Luzi'
+        | '动物身体_Luzi'
+        | '额外身高_Luzi'
+        | '长袖子_Luzi'
+        | '外观工具'
+        | '左眼_Luzi'
+        | '右眼_Luzi'
+        | 'BodyMarkings2_Luzi'
+        | 'Cloth_笨笨蛋Luzi'
+        | 'Cloth_笨笨笨蛋Luzi2'
+        | 'ClothLower_笨笨蛋Luzi'
+        | 'ClothLower_笨笨笨蛋Luzi2'
+        | 'Bra_笨笨蛋Luzi'
+        | 'Panties_笨笨蛋Luzi'
+        | 'Suit_笨笨蛋Luzi'
+        | 'SuitLower_笨笨蛋Luzi'
+        | 'ClothAccessory_笨笨蛋Luzi'
+        | 'ClothAccessory_笨笨笨蛋Luzi2'
+        | 'Necklace_笨笨蛋Luzi'
+        | 'Shoes_笨笨蛋Luzi'
+        | 'Hat_笨笨蛋Luzi'
+        | 'HairAccessory3_笨笨蛋Luzi'
+        | 'Luzi_HairAccessory3_1'
+        | 'Luzi_HairAccessory3_2'
+        | 'Gloves_笨笨蛋Luzi'
+        | 'Mask_笨笨蛋Luzi'
+        | 'Wings_笨笨蛋Luzi'
+        | 'LuziCustom'
+        | 'Luzi_Jewelry_0'
+        | 'Luzi_Jewelry_1';
+}
+
 /** 扩展的身体组（非物品）名称 */
 type CustomGroupBodyName =
     | AssetGroupBodyName
-    | '新前发_Luzi'
-    | '新前发_Luzi_stack'
-    | '新后发_Luzi'
-    | '新后发_Luzi_stack'
-    | '额外头发_Luzi'
-    | 'Liquid2_Luzi'
-    | '身体痕迹_Luzi'
-    | '动物身体_Luzi'
-    | '额外身高_Luzi'
-    | '长袖子_Luzi'
-    | '外观工具'
-    | '左眼_Luzi'
-    | '右眼_Luzi'
-    | 'BodyMarkings2_Luzi'
-    | 'Cloth_笨笨蛋Luzi'
-    | 'Cloth_笨笨笨蛋Luzi2'
-    | 'ClothLower_笨笨蛋Luzi'
-    | 'ClothLower_笨笨笨蛋Luzi2'
-    | 'Bra_笨笨蛋Luzi'
-    | 'Panties_笨笨蛋Luzi'
-    | 'Suit_笨笨蛋Luzi'
-    | 'SuitLower_笨笨蛋Luzi'
-    | 'ClothAccessory_笨笨蛋Luzi'
-    | 'ClothAccessory_笨笨笨蛋Luzi2'
-    | 'Necklace_笨笨蛋Luzi'
-    | 'Shoes_笨笨蛋Luzi'
-    | 'Hat_笨笨蛋Luzi'
-    | 'HairAccessory3_笨笨蛋Luzi'
-    | 'Luzi_HairAccessory3_1'
-    | 'Luzi_HairAccessory3_2'
-    | 'Gloves_笨笨蛋Luzi'
-    | 'Mask_笨笨蛋Luzi'
-    | 'Wings_笨笨蛋Luzi'
-    | 'LuziCustom';
+    | details.StrictCustomGroupBodyName;
 
 type CustomGroupName =
     import('@sugarch/bc-mod-types').CustomGroupName<CustomGroupBodyName>;
