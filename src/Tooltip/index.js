@@ -3,7 +3,9 @@ import "./Tooltip.css";
 function globalTooltip() {
     const tooltip_id = "echo-tooltip";
 
-    let tooltip = /** @type {HTMLDivElement}*/ (document.querySelector(`#${tooltip_id}`));
+    let tooltip = /** @type {HTMLDivElement}*/ (
+        document.querySelector(`#${tooltip_id}`)
+    );
     if (!tooltip) {
         tooltip = document.createElement("div");
         tooltip.id = tooltip_id;
@@ -19,7 +21,10 @@ class InventoryObserver {
         this.observer = new MutationObserver((mutations) => {
             mutations.forEach((mutations) => {
                 mutations.removedNodes.forEach((node) => {
-                    if (node instanceof HTMLElement && node.id === "dialog-inventory") {
+                    if (
+                        node instanceof HTMLElement &&
+                        node.id === "dialog-inventory"
+                    ) {
                         globalTooltip().classList.remove("show");
                     }
                 });
@@ -55,26 +60,39 @@ export function makeTooltipIcon(content, imageSrc) {
     icon.src = imageSrc;
     icon.classList.add("echo-item-tooltip-img");
 
-    const tooltip = globalTooltip();
-
-    icon.addEventListener("mouseover", (event) => {
-        const { top, left, height } = /**@type {HTMLImageElement}*/ (event.target).getBoundingClientRect();
-
-        tooltip.textContent = content;
-        tooltip.style.top = `${top + height / 2}px`;
-        tooltip.style.left = `${left - tooltip.offsetWidth - 8}px`;
-        tooltip.classList.add("show");
-    });
-
-    icon.addEventListener("mouseleave", () => {
-        tooltip.classList.remove("show");
-    });
-
     const wrapper = document.createElement("div");
     wrapper.classList.add("echo-item-tooltip-wrapper");
     wrapper.appendChild(icon);
+    wrapper.dataset.tooltip = content;
 
     InventoryObserver.instance().reTarget();
 
     return wrapper;
+}
+
+/**
+ * @param {HTMLElement} element
+ */
+export function cloneWithTooltip(element) {
+    const tooltip = globalTooltip();
+
+    const ret = element.cloneNode(true);
+    const icon = /** @type {HTMLElement}*/ (ret).querySelector("img");
+    if (icon) {
+        icon.addEventListener("mouseover", (event) => {
+            const { top, left, height } = /**@type {HTMLImageElement}*/ (
+                event.target
+            ).getBoundingClientRect();
+
+            tooltip.textContent = element.dataset.tooltip || "";
+            tooltip.style.top = `${top + height / 2}px`;
+            tooltip.style.left = `${left - tooltip.offsetWidth - 8}px`;
+            tooltip.classList.add("show");
+        });
+
+        icon.addEventListener("mouseleave", () => {
+            tooltip.classList.remove("show");
+        });
+    }
+    return ret;
 }
