@@ -48,13 +48,17 @@ export function setXDrawState(data) {
 
 export function setupSync() {
     HookManager.hookFunction("ChatRoomSync", 10, (args, next) => {
+        const ret = next(args);
+        if (ret instanceof Promise) {
+            return ret.then((res) => setSync());
+        }
         setSync();
-        return next(args);
+        return ret;
     });
 
     HookManager.hookFunction("ChatRoomSyncMemberJoin", 10, (args, next) => {
-        setSync(args[0].SourceMemberNumber);
         next(args);
+        setSync(args[0].SourceMemberNumber);
     });
 
     ChatRoomEvents.on("Hidden", ({ Content, Sender, Dictionary }) => {

@@ -60,7 +60,7 @@ class _ChatRoomOrderTools {
 
     /**
      * @param {Character} character
-     * @returns {XCharacterDrawOrderAssetState | undefined} 如果没有设置或不是物品模式，则返回 undefined
+     * @returns {(XCharacterDrawOrderBase & XCharacterDrawOrderAssetState) | undefined} 如果没有设置或不是物品模式，则返回 undefined
      */
     assetState(character) {
         if (!isXCharacter(character)) return undefined;
