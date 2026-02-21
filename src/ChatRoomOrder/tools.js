@@ -1,5 +1,5 @@
 import { ChatRoomOrder } from "./roomOrder";
-import { Pick } from "./checks";
+import { isAssetState, isXCharacter, Pick } from "./checks";
 
 class _ChatRoomOrderTools {
     /**
@@ -54,6 +54,19 @@ class _ChatRoomOrderTools {
     leashPlayer(from, refresh) {
         ChatRoomLeashPlayer = from.MemberNumber;
         if (refresh !== false) CharacterRefreshLeash(Player);
+    }
+
+    pick = Pick;
+
+    /**
+     * @param {Character} character
+     * @returns {XCharacterDrawOrderAssetState | undefined} 如果没有设置或不是物品模式，则返回 undefined
+     */
+    assetState(character) {
+        if (!isXCharacter(character)) return undefined;
+        const dobj = character.XCharacterDrawOrder;
+        if (!dobj || !isAssetState(dobj)) return undefined;
+        return dobj;
     }
 }
 
