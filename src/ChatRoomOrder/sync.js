@@ -50,7 +50,7 @@ export function setupSync() {
     HookManager.hookFunction("ChatRoomSync", 10, (args, next) => {
         const ret = next(args);
         if (ret instanceof Promise) {
-            return ret.then((res) => setSync());
+            return ret.then(() => setSync());
         }
         setSync();
         return ret;
