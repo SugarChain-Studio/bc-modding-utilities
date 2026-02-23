@@ -9,6 +9,7 @@ const terser = require("@rollup/plugin-terser");
 const copy = require("rollup-plugin-copy");
 const css = require("rollup-plugin-import-css");
 const { defineConfig } = require("rollup");
+const LZString = require("lz-string");
 
 /**
  * 分析相对路径，与path.relative()不同的是，返回的路径会保持"./"开头
@@ -20,6 +21,25 @@ function relativePath(from, to) {
     const ret = path.relative(from, to).replace(/\\/g, "/");
     if (ret === "") return ".";
     return !ret.startsWith("./") ? `./${ret}` : ret;
+}
+
+function unescapeGitPath(str) {
+    const bytes = [];
+
+    for (let i = 0; i < str.length; ) {
+        if (str[i] === "\\" && /^[0-7]{3}/.test(str.slice(i + 1, i + 4))) {
+            // 八进制
+            const oct = str.slice(i + 1, i + 4);
+            bytes.push(parseInt(oct, 8));
+            i += 4;
+        } else {
+            // 普通字符
+            bytes.push(str.charCodeAt(i));
+            i++;
+        }
+    }
+
+    return new TextDecoder("utf-8").decode(new Uint8Array(bytes));
 }
 
 /**
@@ -96,8 +116,7 @@ function buildRollupSetting(packageObj, env) {
 }
 
 /**
- * @typedef { string | AssetOverrideContainer } AssetOverrideLeaf
- * @typedef { Record<string, AssetOverrideLeaf> } AssetOverrideContainer
+ * @typedef { Record<string, string[]> } AssetOverrideContainer
  * 读取assets映射
  * @param {string} startDir 基础目录
  * @param {string[]} assetDirs 资源目录
@@ -117,37 +136,16 @@ async function readAssetsMapping(startDir, assetDirs) {
      */
     const assetCatch = new Map();
 
-    execSync("git config core.quotepath false");
-
     const addAssetCache = (path, version, override = false) => {
         if (assetCatch.has(path) && !override) return;
         assetCatch.set(path, version);
     };
 
-    const removeAssetCache = (path) => {
-        assetCatch.delete(path);
-    };
-
     const addAsset = (path, version, override = false) => {
-        const dirs = path.split(/\\|\//);
-        let curDir = assets;
-
-        while (dirs.length > 1) {
-            const cur = dirs.shift();
-            if (cur === ".") continue;
-            if (!curDir[cur]) curDir[cur] = {};
-            curDir = curDir[cur];
+        assets[version] ??= [];
+        if (!assets[version].includes(path) || override) {
+            assets[version].push(path);
         }
-
-        const file = dirs[0];
-        if (typeof curDir[file] !== "string" || override)
-            curDir[file] = version;
-    };
-
-    const process_line = (line) => {
-        const [sha, fpath] = line.split(/\t/, 2);
-        const relpath = path.relative(startDir, fpath).replace(/\\/g, "/");
-        addAssetCache(relpath, sha.substring(0, 7));
     };
 
     const promises = assetDirs
@@ -155,13 +153,7 @@ async function readAssetsMapping(startDir, assetDirs) {
         .map((dir) => {
             const ls_tree = spawn(
                 "git",
-                [
-                    "ls-tree",
-                    "--format=%(objectname)%x09%(path)",
-                    "-r",
-                    "HEAD",
-                    dir,
-                ],
+                ["log", "--pretty=format:'%H'", "--name-only", "--", dir],
                 {
                     cwd: git_root,
                 }
@@ -169,22 +161,66 @@ async function readAssetsMapping(startDir, assetDirs) {
 
             let prev_unfinished = Buffer.alloc(0);
 
-            ls_tree.stdout.on("data", (data) => {
-                const linedData = Buffer.concat([prev_unfinished, data]);
-                let start = 0;
-                for (let i = 0; i < linedData.length; i++) {
-                    if (linedData[i] === 0x0a) {
-                        process_line(linedData.subarray(start, i).toString());
-                        start = i + 1;
+            let state = "sha";
+
+            let cur_sha = "";
+
+            const process = (linedData) => {
+                if (state === "sha") {
+                    const shaEnd = linedData.indexOf(0x0a);
+                    if (shaEnd === -1) {
+                        return [true, linedData];
+                    }
+                    const sha = linedData
+                        .subarray(0, shaEnd)
+                        .toString()
+                        .replace(/'/g, "");
+                    state = "file";
+                    cur_sha = sha;
+                    return [false, linedData.subarray(shaEnd + 1)];
+                } else if (state === "file") {
+                    const fileEnd = linedData.indexOf(0x0a);
+                    if (fileEnd === -1) {
+                        return [true, linedData];
+                    }
+                    let fpath = linedData.subarray(0, fileEnd).toString();
+
+                    if (fpath.startsWith('"')) {
+                        fpath = unescapeGitPath(fpath.slice(1, -1));
+                    }
+
+                    if (fpath.length > 0) {
+                        const relpath = path
+                            .relative(startDir, fpath)
+                            .replace(/\\/g, "/");
+                        addAssetCache(relpath, cur_sha);
+                        return [false, linedData.subarray(fileEnd + 1)];
+                    } else {
+                        // empty line means the end of current commit
+                        state = "sha";
+                        cur_sha = "";
+                        return [false, linedData.subarray(fileEnd + 1)];
                     }
                 }
-                prev_unfinished = linedData.subarray(start);
+            };
+
+            ls_tree.stdout.on("data", (data) => {
+                let linedData = Buffer.concat([prev_unfinished, data]);
+                while (linedData.length > 0) {
+                    const [shouldBreak, remaining] = process(linedData);
+                    if (shouldBreak) {
+                        prev_unfinished = remaining;
+                        break;
+                    }
+                    linedData = remaining;
+                }
             });
 
             return new Promise((resolve, reject) => {
                 ls_tree.on("exit", () => {
-                    if (prev_unfinished && prev_unfinished.length > 0)
-                        process_line(prev_unfinished.toString());
+                    if (prev_unfinished.length > 0) {
+                        process(prev_unfinished);
+                    }
                     resolve();
                 });
                 ls_tree.on("error", reject);
@@ -192,70 +228,6 @@ async function readAssetsMapping(startDir, assetDirs) {
         });
 
     await Promise.all(promises);
-
-    const timeStr = `${Date.now()}`;
-
-    // 发生修改的文件使用时间戳作为版本号
-    await new Promise((resolve, reject) => {
-        const status = spawn("git", ["status", "--porcelain", startDir], {
-            cwd: git_root,
-        });
-
-        let prev_unfinished = Buffer.alloc(0);
-
-        const process_git_status = (line) => {
-            if (line.length < 4) return;
-            const status = line.substring(0, 2);
-            if ([" M", "M ", "R ", "??", "A "].includes(status)) {
-                const line_path_part =
-                    status === "R "
-                        ? line.substring(3).split(" -> ")[1]
-                        : line.substring(3);
-
-                const fpath = path
-                    .relative(
-                        startDir,
-                        ((src) =>
-                            src.startsWith('"')
-                                ? src.substring(1, src.length - 1)
-                                : src)(line_path_part)
-                    )
-                    .replace(/\\/g, "/");
-
-                if (!fpath.endsWith(".png")) return;
-                console.warn(
-                    `[WARN] [${fpath}] is not in version control, using timestamp as version`
-                );
-                addAssetCache(fpath, timeStr, true);
-            } else if (status === " D" || status === "D ") {
-                const fpath = path.relative(startDir, line.substring(3));
-                removeAssetCache(fpath);
-                console.warn(
-                    `[WARN] [${fpath}] has been removed from version control`
-                );
-            }
-        };
-
-        status.stdout.on("data", (data) => {
-            const linedData = Buffer.concat([prev_unfinished, data]);
-            let start = 0;
-
-            for (let i = 0; i < linedData.length; i++) {
-                if (linedData[i] === 0x0a) {
-                    process_git_status(linedData.subarray(start, i).toString());
-                    start = i + 1;
-                }
-            }
-            prev_unfinished = linedData.subarray(start);
-        });
-
-        status.on("exit", () => {
-            if (prev_unfinished && prev_unfinished.length > 0)
-                process_git_status(prev_unfinished.toString());
-            resolve();
-        });
-        status.on("error", reject);
-    });
 
     assetCatch.forEach((version, path) => addAsset(path, version));
 
@@ -367,8 +339,8 @@ async function writeAssetOverrides({ env, rollupSetting }) {
     if (!fs.existsSync(env.resourceDir))
         fs.mkdirSync(env.resourceDir, { recursive: true });
     fs.writeFileSync(
-        `${env.resourceDir}assetOverrides.json`,
-        JSON.stringify(assetMappings)
+        `${env.resourceDir}assetOverrides.lz`,
+        LZString.compressToBase64(JSON.stringify(assetMappings))
     );
 }
 
