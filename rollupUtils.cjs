@@ -120,15 +120,18 @@ function buildRollupSetting(packageObj, env) {
  * 读取assets映射
  * @param {string} startDir 基础目录
  * @param {string[]} assetDirs 资源目录
+ * @param {boolean} checkChanges 是否检查未提交的修改，默认为false
  * @returns { Promise<AssetOverrideContainer> } 资源映射表
  */
-async function readAssetsMapping(startDir, assetDirs) {
+async function readAssetsMapping(startDir, assetDirs, checkChanges = false) {
     const git_root = execSync("git rev-parse --show-toplevel")
         .toString()
         .trim();
 
     /** @type {AssetOverrideContainer} */
     const assets = {};
+
+    execSync("git config core.quotepath true");
 
     /**
      * Map<路径, 版本>
@@ -228,6 +231,74 @@ async function readAssetsMapping(startDir, assetDirs) {
         });
 
     await Promise.all(promises);
+
+    const timeStr = `${Date.now()}`;
+
+    if (checkChanges) {
+        // 发生修改的文件使用时间戳作为版本号
+        await new Promise((resolve, reject) => {
+            const status = spawn("git", ["status", "--porcelain", startDir], {
+                cwd: git_root,
+            });
+
+            let prev_unfinished = Buffer.alloc(0);
+
+            const process_git_status = (line) => {
+                if (line.length < 4) return;
+                const status = line.substring(0, 2);
+                const line_path_part =
+                    status === "R "
+                        ? line.substring(3).split(" -> ")[1]
+                        : line.substring(3);
+
+                const unescaped = line_path_part.startsWith('"')
+                    ? unescapeGitPath(
+                          line_path_part.substring(1, line_path_part.length - 1)
+                      )
+                    : line_path_part;
+                if ([" M", "M ", "R ", "??", "A "].includes(status)) {
+                    const fpath = path
+                        .relative(startDir, unescaped)
+                        .replace(/\\/g, "/");
+                    if (!fpath.endsWith(".png")) return;
+                    console.warn(
+                        `[WARN] [${fpath}] is not in version control, using timestamp as version : ${timeStr}`
+                    );
+                    addAssetCache(fpath, timeStr, true);
+                } else if (status === " D" || status === "D ") {
+                    const fpath = path
+                        .relative(startDir, unescaped)
+                        .replace(/\\/g, "/");
+                    assetCatch.delete(fpath);
+                    console.warn(
+                        `[WARN] [${fpath}] has been removed from version control`
+                    );
+                }
+            };
+
+            status.stdout.on("data", (data) => {
+                const linedData = Buffer.concat([prev_unfinished, data]);
+                let start = 0;
+
+                for (let i = 0; i < linedData.length; i++) {
+                    if (linedData[i] === 0x0a) {
+                        process_git_status(
+                            linedData.subarray(start, i).toString()
+                        );
+                        start = i + 1;
+                    }
+                }
+                prev_unfinished = linedData.subarray(start);
+            });
+
+            status.on("exit", () => {
+                if (prev_unfinished && prev_unfinished.length > 0)
+                    process_git_status(prev_unfinished.toString());
+                resolve();
+            });
+            status.on("error", reject);
+        });
+    }
 
     assetCatch.forEach((version, path) => addAsset(path, version));
 
@@ -334,10 +405,17 @@ async function createReplaceRecord({ env, modInfo, rollupSetting }) {
 async function writeAssetOverrides({ env, rollupSetting }) {
     const assetMappings = await readAssetsMapping(
         rollupSetting.assets.location,
-        rollupSetting.assets.assets
+        rollupSetting.assets.assets,
+        env.debug
     );
     if (!fs.existsSync(env.resourceDir))
         fs.mkdirSync(env.resourceDir, { recursive: true });
+    if (env.debug) {
+        fs.writeFileSync(
+            `${env.resourceDir}assetOverrides.json`,
+            JSON.stringify(assetMappings, null, 2)
+        );
+    }
     fs.writeFileSync(
         `${env.resourceDir}assetOverrides.lz`,
         LZString.compressToBase64(JSON.stringify(assetMappings))
