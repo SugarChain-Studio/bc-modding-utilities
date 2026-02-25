@@ -1,3 +1,4 @@
+import { Globals } from "@sugarch/bc-mod-utility";
 import "./Tooltip.css";
 
 function globalTooltip() {
@@ -17,14 +18,12 @@ function globalTooltip() {
 }
 
 class InventoryObserver {
-    constructor() {
+    constructor(key) {
+        this.key = key;
         this.observer = new MutationObserver((mutations) => {
             mutations.forEach((mutations) => {
                 mutations.removedNodes.forEach((node) => {
-                    if (
-                        node instanceof HTMLElement &&
-                        node.id === "dialog-inventory"
-                    ) {
+                    if (node instanceof HTMLElement && node.id === this.key) {
                         globalTooltip().classList.remove("show");
                     }
                 });
@@ -33,19 +32,11 @@ class InventoryObserver {
     }
 
     reTarget() {
-        const t = document.body.querySelector("#dialog-inventory");
+        const t = document.body.querySelector(`#${this.key}`);
         if (t) {
             this.observer.disconnect();
             this.observer.observe(t.parentNode, { childList: true });
         }
-    }
-
-    static _instance = null;
-    static instance() {
-        if (!this._instance) {
-            this._instance = new InventoryObserver();
-        }
-        return this._instance;
     }
 }
 
@@ -65,15 +56,14 @@ export function makeTooltipIcon(content, imageSrc) {
     wrapper.appendChild(icon);
     wrapper.dataset.tooltip = content;
 
-    InventoryObserver.instance().reTarget();
-
     return wrapper;
 }
 
 /**
  * @param {HTMLElement} element
+ * @param {string} [key] 用于标识tooltip的父元素，默认为"dialog-activity"
  */
-export function cloneWithTooltip(element) {
+export function cloneWithTooltip(element, key = "dialog-activity") {
     const tooltip = globalTooltip();
 
     const ret = element.cloneNode(true);
@@ -93,6 +83,12 @@ export function cloneWithTooltip(element) {
         icon.addEventListener("mouseleave", () => {
             tooltip.classList.remove("show");
         });
+
+        const observer = Globals.get(
+            `TooltipObserver-${key}`,
+            () => new InventoryObserver(key)
+        );
+        observer.reTarget();
     }
     return ret;
 }
