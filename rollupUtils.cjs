@@ -198,7 +198,8 @@ async function gitLogFileHistory(git_root, startDir, dir) {
         if (line.startsWith('"')) {
             line = unescapeGitPath(line.slice(1, -1));
         }
-        ret.set(path.relative(startDir, line).replace(/\\/g, "/"), cur_sha);
+        const p = path.relative(startDir, line).replace(/\\/g, "/");
+        if(!ret.has(p)) ret.set(p, cur_sha);
     };
 
     log_process.stdout.on("data", (data) => {
