@@ -116,6 +116,176 @@ function buildRollupSetting(packageObj, env) {
 }
 
 /**
+ * 分析git ls-tree，获取文件列表
+ * @param {string} git_root 
+ * @param {string} startDir 
+ * @param {string} dir 
+ * @returns {Promise<Set<string>>} Set<路径>
+ */
+async function gitLsTree(git_root, startDir, dir) {
+
+    /** @type {Set<string>} */
+    const ret = new Set();
+
+    const processLine = (line) => {
+        if (line.startsWith('"')) {
+            line = unescapeGitPath(line.slice(1, -1));
+        }
+        ret.add(path.relative(startDir, line).replace(/\\/g, "/"));
+    };
+
+    const ls_process = spawn(
+        "git",
+        [
+            "ls-tree",
+            "--format=%(path)",
+            "-r",
+            "HEAD",
+            dir,
+        ],
+        {
+            cwd: git_root,
+        }
+    );
+
+    let prev_unfinished = Buffer.alloc(0);
+
+    ls_process.stdout.on("data", (data) => {
+        const linedData = Buffer.concat([prev_unfinished, data]);
+        let start = 0;
+        for (let i = 0; i < linedData.length; i++) {
+            if (linedData[i] === 0x0a) {
+                processLine(linedData.subarray(start, i).toString());
+                start = i + 1;
+            }
+        }
+        prev_unfinished = linedData.subarray(start);
+    });
+
+    return new Promise((resolve, reject) => {
+        ls_process.on("exit", () => {
+            if (prev_unfinished.length > 0)
+                processLine(prev_unfinished.toString());
+            resolve(ret);
+        });
+        ls_process.on("error", reject);
+    });
+}
+
+/**
+ * 分析git log，获取文件的版本信息
+ * @param {string} git_root 
+ * @param {string} startDir 
+ * @param {string} dir 
+ * @returns {Promise<Map<string, string>>} Map<路径, 版本>
+ */
+async function gitLogFileHistory(git_root, startDir, dir) {
+
+    /** @type {Map<string, string>} */
+    const ret = new Map();
+
+    const log_process = spawn("git", ["log", "--pretty=format:'%H'", "--name-only", "--", dir], {
+        cwd: git_root,
+    });
+    let prev_unfinished = Buffer.alloc(0);
+
+    let cur_sha = "";
+    const processLine = (line) => {
+        if (line.startsWith("'") && line.length === 42) {
+            cur_sha = line.slice(1, -1);
+            return;
+        }
+        if (line.startsWith('"')) {
+            line = unescapeGitPath(line.slice(1, -1));
+        }
+        ret.set(path.relative(startDir, line).replace(/\\/g, "/"), cur_sha);
+    };
+
+    log_process.stdout.on("data", (data) => {
+        const linedData = Buffer.concat([prev_unfinished, data]);
+        let start = 0;
+        for (let i = 0; i < linedData.length; i++) {
+            if (linedData[i] === 0x0a) {
+                if (start !== i)
+                    processLine(linedData.subarray(start, i).toString());
+                start = i + 1;
+            }
+        }
+        prev_unfinished = linedData.subarray(start);
+    });
+
+    return new Promise((resolve, reject) => {
+        log_process.on("exit", () => {
+            if (prev_unfinished.length > 0)
+                processLine(prev_unfinished.toString());
+            resolve(ret);
+        });
+        log_process.on("error", reject);
+    });
+}
+
+/**
+ * 检查未提交的修改
+ * @param {string} git_root 
+ * @param {string} startDir 
+ * @returns {Promise<{edit:Set<string>, remove:Set<string>}>} 修改和删除的文件列表
+ */
+function gitChanges(git_root, startDir) {
+    return new Promise((resolve, reject) => {
+        /** @type {Set<string>} */
+        const edit = new Set()
+        /** @type {Set<string>} */
+        const remove = new Set();
+
+        const status = spawn("git", ["status", "--porcelain", startDir], {
+            cwd: git_root,
+        });
+
+        let prev_unfinished = Buffer.alloc(0);
+
+        const process_git_status = (line) => {
+            if (line.length < 4) return;
+            const status = line.substring(0, 2);
+            const line_path_part = status === "R " ? line.substring(3).split(" -> ")[1] : line.substring(3);
+
+            const unescaped = line_path_part.startsWith('"')
+                ? unescapeGitPath(line_path_part.substring(1, line_path_part.length - 1))
+                : line_path_part;
+            if ([" M", "M ", "R ", "??", "A "].includes(status)) {
+                const fpath = path.relative(startDir, unescaped).replace(/\\/g, "/");
+                if (!fpath.endsWith(".png")) return;
+                console.warn(
+                    `[WARN] [${fpath}] is not in version control, using timestamp as version : ${timeStr}`
+                );
+                edit.add(fpath);
+            } else if (status === " D" || status === "D ") {
+                const fpath = path.relative(startDir, unescaped).replace(/\\/g, "/");
+                remove.add(fpath);
+                console.warn(`[WARN] [${fpath}] has been removed from version control`);
+            }
+        };
+
+        status.stdout.on("data", (data) => {
+            const linedData = Buffer.concat([prev_unfinished, data]);
+            let start = 0;
+            for (let i = 0; i < linedData.length; i++) {
+                if (linedData[i] === 0x0a) {
+                    process_git_status(linedData.subarray(start, i).toString());
+                    start = i + 1;
+                }
+            }
+            prev_unfinished = linedData.subarray(start);
+        });
+
+        status.on("exit", () => {
+            if (prev_unfinished && prev_unfinished.length > 0) process_git_status(prev_unfinished.toString());
+            resolve({ edit, remove });
+        });
+        status.on("error", reject);
+    });
+}
+
+/**
  * @typedef { Record<string, string[]> } AssetOverrideContainer
  * 读取assets映射
  * @param {string} startDir 基础目录
@@ -124,20 +294,13 @@ function buildRollupSetting(packageObj, env) {
  * @returns { Promise<AssetOverrideContainer> } 资源映射表
  */
 async function readAssetsMapping(startDir, assetDirs, checkChanges = false) {
-    const git_root = execSync("git rev-parse --show-toplevel")
-        .toString()
-        .trim();
+    const git_root = execSync("git rev-parse --show-toplevel").toString().trim();
 
     /** @type {AssetOverrideContainer} */
     const assets = {};
 
     execSync("git config core.quotepath true");
 
-    /**
-     * Map<路径, 版本>
-     * @type {Map<string,string>}
-     */
-    const assetCatch = new Map();
 
     const addAssetCache = (path, version, override = false) => {
         if (assetCatch.has(path) && !override) return;
@@ -151,153 +314,52 @@ async function readAssetsMapping(startDir, assetDirs, checkChanges = false) {
         }
     };
 
-    const promises = assetDirs
-        .map((dir) => path.join(startDir, dir))
-        .map((dir) => {
-            const ls_tree = spawn(
-                "git",
-                ["log", "--pretty=format:'%H'", "--name-only", "--", dir],
-                {
-                    cwd: git_root,
-                }
-            );
+    const dirs = assetDirs.map((dir) => path.join(startDir, dir).replace(/\\/g, "/"));
 
-            let prev_unfinished = Buffer.alloc(0);
+    const lspaths = await (
+        async () => {
+            /** @type {string[]} */
+            const ret = [];
+            for (const dir of dirs) {
+                const files = await gitLsTree(git_root, startDir, dir)
+                files.forEach(f => ret.push(f));
+            }
+            return ret;
+        })()
 
-            let state = "sha";
+    const logpaths = await (async () => {
+        /** @type {Map<string,string>} */
+        const ret = new Map();
+        for (const dir of dirs) {
+            const log = await gitLogFileHistory(git_root, startDir, dir);
+            for (const [file, sha] of log) {
+                ret.set(file, sha);
+            }
+        }
+        return ret;
+    })()
 
-            let cur_sha = "";
+    /**
+     * Map<路径, 版本>
+     * @type {Map<string,string>}
+     */
+    const assetCatch = new Map();
 
-            const process = (linedData) => {
-                if (state === "sha") {
-                    const shaEnd = linedData.indexOf(0x0a);
-                    if (shaEnd === -1) {
-                        return [true, linedData];
-                    }
-                    const sha = linedData
-                        .subarray(0, shaEnd)
-                        .toString()
-                        .replace(/'/g, "");
-                    state = "file";
-                    cur_sha = sha;
-                    return [false, linedData.subarray(shaEnd + 1)];
-                } else if (state === "file") {
-                    const fileEnd = linedData.indexOf(0x0a);
-                    if (fileEnd === -1) {
-                        return [true, linedData];
-                    }
-                    let fpath = linedData.subarray(0, fileEnd).toString();
-
-                    if (fpath.startsWith('"')) {
-                        fpath = unescapeGitPath(fpath.slice(1, -1));
-                    }
-
-                    if (fpath.length > 0) {
-                        const relpath = path
-                            .relative(startDir, fpath)
-                            .replace(/\\/g, "/");
-                        addAssetCache(relpath, cur_sha);
-                        return [false, linedData.subarray(fileEnd + 1)];
-                    } else {
-                        // empty line means the end of current commit
-                        state = "sha";
-                        cur_sha = "";
-                        return [false, linedData.subarray(fileEnd + 1)];
-                    }
-                }
-            };
-
-            ls_tree.stdout.on("data", (data) => {
-                let linedData = Buffer.concat([prev_unfinished, data]);
-                while (linedData.length > 0) {
-                    const [shouldBreak, remaining] = process(linedData);
-                    if (shouldBreak) {
-                        prev_unfinished = remaining;
-                        break;
-                    }
-                    linedData = remaining;
-                }
-            });
-
-            return new Promise((resolve, reject) => {
-                ls_tree.on("exit", () => {
-                    if (prev_unfinished.length > 0) {
-                        process(prev_unfinished);
-                    }
-                    resolve();
-                });
-                ls_tree.on("error", reject);
-            });
-        });
-
-    await Promise.all(promises);
+    for (const path of lspaths) {
+        if (logpaths.has(path)) {
+            addAssetCache(path, logpaths.get(path));
+        } else {
+            console.warn(`[WARN] [${path}] is not in commit history, using timestamp as version`);
+        }
+    }
 
     const timeStr = `${Date.now()}`;
 
     if (checkChanges) {
         // 发生修改的文件使用时间戳作为版本号
-        await new Promise((resolve, reject) => {
-            const status = spawn("git", ["status", "--porcelain", startDir], {
-                cwd: git_root,
-            });
-
-            let prev_unfinished = Buffer.alloc(0);
-
-            const process_git_status = (line) => {
-                if (line.length < 4) return;
-                const status = line.substring(0, 2);
-                const line_path_part =
-                    status === "R "
-                        ? line.substring(3).split(" -> ")[1]
-                        : line.substring(3);
-
-                const unescaped = line_path_part.startsWith('"')
-                    ? unescapeGitPath(
-                          line_path_part.substring(1, line_path_part.length - 1)
-                      )
-                    : line_path_part;
-                if ([" M", "M ", "R ", "??", "A "].includes(status)) {
-                    const fpath = path
-                        .relative(startDir, unescaped)
-                        .replace(/\\/g, "/");
-                    if (!fpath.endsWith(".png")) return;
-                    console.warn(
-                        `[WARN] [${fpath}] is not in version control, using timestamp as version : ${timeStr}`
-                    );
-                    addAssetCache(fpath, timeStr, true);
-                } else if (status === " D" || status === "D ") {
-                    const fpath = path
-                        .relative(startDir, unescaped)
-                        .replace(/\\/g, "/");
-                    assetCatch.delete(fpath);
-                    console.warn(
-                        `[WARN] [${fpath}] has been removed from version control`
-                    );
-                }
-            };
-
-            status.stdout.on("data", (data) => {
-                const linedData = Buffer.concat([prev_unfinished, data]);
-                let start = 0;
-
-                for (let i = 0; i < linedData.length; i++) {
-                    if (linedData[i] === 0x0a) {
-                        process_git_status(
-                            linedData.subarray(start, i).toString()
-                        );
-                        start = i + 1;
-                    }
-                }
-                prev_unfinished = linedData.subarray(start);
-            });
-
-            status.on("exit", () => {
-                if (prev_unfinished && prev_unfinished.length > 0)
-                    process_git_status(prev_unfinished.toString());
-                resolve();
-            });
-            status.on("error", reject);
-        });
+        const { edit, remove } = await gitChanges(git_root, startDir);
+        edit.forEach((path) => addAssetCache(path, timeStr, true));
+        remove.forEach((path) => assetCatch.delete(path));
     }
 
     assetCatch.forEach((version, path) => addAsset(path, version));
