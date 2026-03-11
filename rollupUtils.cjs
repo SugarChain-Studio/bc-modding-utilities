@@ -117,13 +117,12 @@ function buildRollupSetting(packageObj, env) {
 
 /**
  * 分析git ls-tree，获取文件列表
- * @param {string} git_root 
- * @param {string} startDir 
- * @param {string} dir 
+ * @param {string} git_root
+ * @param {string} startDir
+ * @param {string} dir
  * @returns {Promise<Set<string>>} Set<路径>
  */
 async function gitLsTree(git_root, startDir, dir) {
-
     /** @type {Set<string>} */
     const ret = new Set();
 
@@ -136,13 +135,7 @@ async function gitLsTree(git_root, startDir, dir) {
 
     const ls_process = spawn(
         "git",
-        [
-            "ls-tree",
-            "--format=%(path)",
-            "-r",
-            "HEAD",
-            dir,
-        ],
+        ["ls-tree", "--format=%(path)", "-r", "HEAD", dir],
         {
             cwd: git_root,
         }
@@ -174,19 +167,22 @@ async function gitLsTree(git_root, startDir, dir) {
 
 /**
  * 分析git log，获取文件的版本信息
- * @param {string} git_root 
- * @param {string} startDir 
- * @param {string} dir 
+ * @param {string} git_root
+ * @param {string} startDir
+ * @param {string} dir
  * @returns {Promise<Map<string, string>>} Map<路径, 版本>
  */
 async function gitLogFileHistory(git_root, startDir, dir) {
-
     /** @type {Map<string, string>} */
     const ret = new Map();
 
-    const log_process = spawn("git", ["log", "--pretty=format:'%H'", "--name-only", "--", dir], {
-        cwd: git_root,
-    });
+    const log_process = spawn(
+        "git",
+        ["log", "--pretty=format:'%H'", "--name-only", "--", dir],
+        {
+            cwd: git_root,
+        }
+    );
     let prev_unfinished = Buffer.alloc(0);
 
     let cur_sha = "";
@@ -199,7 +195,7 @@ async function gitLogFileHistory(git_root, startDir, dir) {
             line = unescapeGitPath(line.slice(1, -1));
         }
         const p = path.relative(startDir, line).replace(/\\/g, "/");
-        if(!ret.has(p)) ret.set(p, cur_sha);
+        if (!ret.has(p)) ret.set(p, cur_sha);
     };
 
     log_process.stdout.on("data", (data) => {
@@ -227,14 +223,16 @@ async function gitLogFileHistory(git_root, startDir, dir) {
 
 /**
  * 检查未提交的修改
- * @param {string} git_root 
- * @param {string} startDir 
+ * @param {string} git_root
+ * @param {string} startDir
  * @returns {Promise<{edit:Set<string>, remove:Set<string>}>} 修改和删除的文件列表
  */
 function gitChanges(git_root, startDir) {
+    const timeStr = `${Date.now()}`;
+
     return new Promise((resolve, reject) => {
         /** @type {Set<string>} */
-        const edit = new Set()
+        const edit = new Set();
         /** @type {Set<string>} */
         const remove = new Set();
 
@@ -247,22 +245,33 @@ function gitChanges(git_root, startDir) {
         const process_git_status = (line) => {
             if (line.length < 4) return;
             const status = line.substring(0, 2);
-            const line_path_part = status === "R " ? line.substring(3).split(" -> ")[1] : line.substring(3);
+            const line_path_part =
+                status === "R "
+                    ? line.substring(3).split(" -> ")[1]
+                    : line.substring(3);
 
             const unescaped = line_path_part.startsWith('"')
-                ? unescapeGitPath(line_path_part.substring(1, line_path_part.length - 1))
+                ? unescapeGitPath(
+                      line_path_part.substring(1, line_path_part.length - 1)
+                  )
                 : line_path_part;
             if ([" M", "M ", "R ", "??", "A "].includes(status)) {
-                const fpath = path.relative(startDir, unescaped).replace(/\\/g, "/");
+                const fpath = path
+                    .relative(startDir, unescaped)
+                    .replace(/\\/g, "/");
                 if (!fpath.endsWith(".png")) return;
                 console.warn(
                     `[WARN] [${fpath}] is not in version control, using timestamp as version : ${timeStr}`
                 );
                 edit.add(fpath);
             } else if (status === " D" || status === "D ") {
-                const fpath = path.relative(startDir, unescaped).replace(/\\/g, "/");
+                const fpath = path
+                    .relative(startDir, unescaped)
+                    .replace(/\\/g, "/");
                 remove.add(fpath);
-                console.warn(`[WARN] [${fpath}] has been removed from version control`);
+                console.warn(
+                    `[WARN] [${fpath}] has been removed from version control`
+                );
             }
         };
 
@@ -279,7 +288,8 @@ function gitChanges(git_root, startDir) {
         });
 
         status.on("exit", () => {
-            if (prev_unfinished && prev_unfinished.length > 0) process_git_status(prev_unfinished.toString());
+            if (prev_unfinished && prev_unfinished.length > 0)
+                process_git_status(prev_unfinished.toString());
             resolve({ edit, remove });
         });
         status.on("error", reject);
@@ -295,13 +305,14 @@ function gitChanges(git_root, startDir) {
  * @returns { Promise<AssetOverrideContainer> } 资源映射表
  */
 async function readAssetsMapping(startDir, assetDirs, checkChanges = false) {
-    const git_root = execSync("git rev-parse --show-toplevel").toString().trim();
+    const git_root = execSync("git rev-parse --show-toplevel")
+        .toString()
+        .trim();
 
     /** @type {AssetOverrideContainer} */
     const assets = {};
 
     execSync("git config core.quotepath true");
-
 
     const addAssetCache = (path, version, override = false) => {
         if (assetCatch.has(path) && !override) return;
@@ -315,18 +326,19 @@ async function readAssetsMapping(startDir, assetDirs, checkChanges = false) {
         }
     };
 
-    const dirs = assetDirs.map((dir) => path.join(startDir, dir).replace(/\\/g, "/"));
+    const dirs = assetDirs.map((dir) =>
+        path.join(startDir, dir).replace(/\\/g, "/")
+    );
 
-    const lspaths = await (
-        async () => {
-            /** @type {string[]} */
-            const ret = [];
-            for (const dir of dirs) {
-                const files = await gitLsTree(git_root, startDir, dir)
-                files.forEach(f => ret.push(f));
-            }
-            return ret;
-        })()
+    const lspaths = await (async () => {
+        /** @type {string[]} */
+        const ret = [];
+        for (const dir of dirs) {
+            const files = await gitLsTree(git_root, startDir, dir);
+            files.forEach((f) => ret.push(f));
+        }
+        return ret;
+    })();
 
     const logpaths = await (async () => {
         /** @type {Map<string,string>} */
@@ -338,7 +350,7 @@ async function readAssetsMapping(startDir, assetDirs, checkChanges = false) {
             }
         }
         return ret;
-    })()
+    })();
 
     /**
      * Map<路径, 版本>
@@ -350,7 +362,9 @@ async function readAssetsMapping(startDir, assetDirs, checkChanges = false) {
         if (logpaths.has(path)) {
             addAssetCache(path, logpaths.get(path));
         } else {
-            console.warn(`[WARN] [${path}] is not in commit history, using timestamp as version`);
+            console.warn(
+                `[WARN] [${path}] is not in commit history, using timestamp as version`
+            );
         }
     }
 
