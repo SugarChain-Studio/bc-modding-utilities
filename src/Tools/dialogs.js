@@ -70,60 +70,6 @@ export class DialogTools {
     }
 
     /**
-     * 从物品组名、物品名、对话原型复制对话
-     *
-     * @example
-     * ```js
-     * const dialog = Tools.replicateTypedItemDialog(["ItemPelvis"],["幸运贞操带"],{CN:{SelectBase:"选择配置"}})
-     *
-     * // 上面的代码如同这样
-     * const dialog = {
-     *   CN: {
-     *     "ItemPelvis幸运贞操带SelectBase": "选择配置"
-     *   }
-     * }
-     * ```
-     * @template {string} GroupName
-     * @param {GroupName[]} groupNames 物品组名
-     * @param {string[]} assetNames 物品名
-     * @param {Translation.Dialog} dialogPrototye
-     * @return {Translation.Dialog}
-     */
-    static replicateGroupedItemDialog(groupNames, assetNames, dialogPrototye) {
-        return groupNames.reduce((pv, group) => {
-            for (const asset of assetNames) {
-                for (const [lang, entry] of Object.entries(dialogPrototye)) {
-                    for (const [key, value] of Object.entries(entry)) {
-                        const dialogKey = `${group}${asset}${key}`;
-                        if (!pv[lang]) pv[lang] = {};
-                        pv[lang][dialogKey] = value;
-                    }
-                }
-            }
-            return pv;
-        }, /** @type {Translation.Dialog} */ ({}));
-    }
-
-    /**
-     * 生成定制对话，不含有物品组名
-     * @param {string[]} assetNames 物品名
-     * @param {Translation.Dialog} dialogPrototye
-     * @returns {Translation.Dialog}
-     */
-    static replicateCustomDialog(assetNames, dialogPrototye) {
-        return assetNames.reduce((pv, asset) => {
-            for (const [lang, entry] of Object.entries(dialogPrototye)) {
-                for (const [key, value] of Object.entries(entry)) {
-                    const dialogKey = `${CustomDialogPrefix}${asset}${key}`;
-                    if (!pv[lang]) pv[lang] = {};
-                    pv[lang][dialogKey] = value;
-                }
-            }
-            return pv;
-        }, /** @type {Translation.Dialog} */ ({}));
-    }
-
-    /**
      * 提供键，从 语言-键-文本 中挑选出对应的 语言-文本
      * @param {Translation.String} translation
      * @param {string} key
@@ -184,6 +130,26 @@ export class DialogTools {
                         krder[lang](from, assetStrings[lang]) ||
                         krder["CN"](from, assetStrings["CN"]);
                 });
+            }
+        }
+        return ret;
+    }
+
+    /**
+     * @template K
+     * @param  {...[ string| string[], K]} args
+     * @returns {Record<string,K>}
+     */
+    repeatEntries(...args) {
+        /** @type {Record<string,K>} */
+        const ret = {};
+        for (const [key, value] of args) {
+            if (Array.isArray(key)) {
+                for (const k of key) {
+                    ret[k] = value;
+                }
+            } else {
+                ret[key] = value;
             }
         }
         return ret;
