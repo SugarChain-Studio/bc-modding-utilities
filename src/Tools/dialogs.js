@@ -13,8 +13,6 @@
  * @property { OptionDialogGenerator } option 产生选项按钮文本（Option）和选项输出文本（Set）的函数
  */
 
-const CustomDialogPrefix = "Luzi_";
-
 export class DialogTools {
     /**
      * 为 ModularItem 生成对话
@@ -136,11 +134,11 @@ export class DialogTools {
     }
 
     /**
-     * @template K
+     * @template {string} K
      * @param  {...[ string| string[], K]} args
      * @returns {Record<string,K>}
      */
-    repeatEntries(...args) {
+    repeatStrings(...args) {
         /** @type {Record<string,K>} */
         const ret = {};
         for (const [key, value] of args) {
