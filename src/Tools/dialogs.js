@@ -138,7 +138,7 @@ export class DialogTools {
      * @param  {...[ string| string[], K]} args
      * @returns {Record<string,K>}
      */
-    repeatStrings(...args) {
+    static repeatEntries(...args) {
         /** @type {Record<string,K>} */
         const ret = {};
         for (const [key, value] of args) {
