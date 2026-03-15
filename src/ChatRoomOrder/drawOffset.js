@@ -69,11 +69,11 @@ function createPrereq(prereq) {
     return new ModifiersWithPrereq(prereq);
 }
 
-export const DrawCharacterModifier = {
+export class DrawCharacterModifier {
     /**
      * @param {DrawOffsetFunction} modifier
      */
-    addModifier(modifier) {
+    static addModifier(modifier) {
         modifierPipeline.register((acc, C, _) => {
             const result = modifier(C, acc);
             if (result) {
@@ -81,7 +81,7 @@ export const DrawCharacterModifier = {
             }
             return acc;
         });
-    },
+    }
 
-    createPrereq,
-};
+    static createPrereq = createPrereq;
+}

@@ -1,13 +1,13 @@
 import { ModInfo } from "@mod-utils/rollupHelper";
 
-export const Logger = {
-    info: (message) => {
+export class Logger {
+    static info(message) {
         console.info(`[${ModInfo.name}] ${message}`);
-    },
-    warn: (message) => {
+    }
+    static warn(message) {
         console.warn(`[${ModInfo.name}] ${message}`);
-    },
-    error: (message) => {
+    }
+    static error(message) {
         console.error(`[${ModInfo.name}] ${message}`);
-    },
-};
+    }
+}

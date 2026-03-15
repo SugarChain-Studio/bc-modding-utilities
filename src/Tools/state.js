@@ -33,6 +33,6 @@ class OrgasmState {
     }
 }
 
-export const StateTools = {
-    OrgasmState,
-};
+export class StateTools {
+    static OrgasmState = OrgasmState;
+}

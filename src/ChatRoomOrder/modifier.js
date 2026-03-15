@@ -101,8 +101,8 @@ const timerDrawMod = (bePrev, beNext) =>
         generalBranchF(bePrev, beNext)
     );
 
-export const DrawMods = {
-    asset: assetDrawMod,
-    timer: timerDrawMod,
-    builder: modifierBuilder,
-};
+export class DrawMods {
+    static asset = assetDrawMod;
+    static timer = timerDrawMod;
+    static builder = modifierBuilder;
+}

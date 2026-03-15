@@ -118,11 +118,11 @@ export function pickCharactreOther(c) {
     return undefined;
 }
 
-export const Pick = {
-    next: pickCharacterNext,
-    prev: pickCharacterPrev,
-    other: pickCharactreOther,
-};
+export class Pick {
+    static next = pickCharacterNext;
+    static prev = pickCharacterPrev;
+    static other = pickCharactreOther;
+}
 
 /**
  * @template T
@@ -157,9 +157,9 @@ export function branchXCharacter(c, onPrev, onNext) {
     return undefined;
 }
 
-export const Validations = {
-    validDrawOrderState,
-};
+export class Validations {
+    static validDrawOrderState = validDrawOrderState;
+}
 
 /**
  * 检查 XCharacterDrawOrderWithAsset 是否满足条件
@@ -215,12 +215,12 @@ export function testDrawOrderState(C, state) {
     return false;
 }
 
-export const Test = {
-    testAssetState,
-    testPoseState,
-    testTimerState,
-    testDrawState: testDrawOrderState,
-};
+export class Test {
+    static testAssetState = testAssetState;
+    static testPoseState = testPoseState;
+    static testTimerState = testTimerState;
+    static testDrawState = testDrawOrderState;
+}
 
 /**
  * 获取角色的 XCharacterDrawOrderState，如果无效则返回 undefined。

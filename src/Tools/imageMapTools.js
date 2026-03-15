@@ -19,7 +19,7 @@ function poseMappingSegments(poseMapping) {
  */
 
 /**
- * @param {CustomAssetDefinition["Layer"][0]} layer
+ * @param {NonNullable<CustomAssetDefinition["Layer"]>[0]} layer
  * @param {ExtendedItemConfig<TypedItemOption> | undefined} config
  * @returns {string[]}
  */
@@ -105,8 +105,10 @@ export class ImageMapTools {
     /**
      * @param {ImageMapType} from
      * @param {ImageMapType} to
+     * @returns { Record<string,string> }
      */
     static mappingPath(from, to) {
+        /** @type {(im: ImageMapType) => string} */
         const getPath = (im) => {
             switch (im[0]) {
                 case "Preview":
@@ -138,13 +140,14 @@ export class ImageMapTools {
 
             const poseMapping = layer.InheritPoseMappingFields
                 ? { ...asset.PoseMapping, ...(layer.PoseMapping ?? {}) }
-                : layer.PoseMapping ?? asset.PoseMapping;
+                : (layer.PoseMapping ?? asset.PoseMapping ?? {});
 
             const poseSegs = poseMappingSegments(poseMapping);
 
             const layerTypeSegs = layerTypesSegs(layer, config);
             if (layerTypeSegs.length === 0) layerTypeSegs.push("");
 
+            /** @type {(g: CustomGroupName, poseSeg: string, file: string, layerType: string) => string} */
             const path = (g, poseSeg, file, layerType) =>
                 `Assets/Female3DCG/${g}/${poseSeg}${[
                     asset.Name,
