@@ -27,7 +27,9 @@ class ChatRoomOrder_ {
      * 初始化配对绘制功能
      */
     setup() {
+        //@ts-ignore
         if (globalThis[setupKey]) return;
+        //@ts-ignore
         globalThis[setupKey] = ChatRoomOrder;
         setupXCharacterDrawlist();
         setupSync();

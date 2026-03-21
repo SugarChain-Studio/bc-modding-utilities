@@ -18,6 +18,7 @@ function globalTooltip() {
 }
 
 class InventoryObserver {
+    /** @param {string} key */
     constructor(key) {
         this.key = key;
         this.observer = new MutationObserver((mutations) => {

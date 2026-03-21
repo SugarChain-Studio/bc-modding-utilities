@@ -107,8 +107,10 @@ export class Tools {
     static topLeftBuilder(basePos, ...args) {
         const result = { Left: { "": basePos.Left }, Top: { "": basePos.Top } };
         for (const [pose, pos] of args) {
-            if (pos.Left !== undefined) result.Left[pose] = pos.Left;
-            if (pos.Top !== undefined) result.Top[pose] = pos.Top;
+            if (pos.Left !== undefined)
+                /** @type {any}*/ (result.Left)[pose] = pos.Left;
+            if (pos.Top !== undefined)
+                /** @type {any}*/ (result.Top)[pose] = pos.Top;
         }
         return result;
     }

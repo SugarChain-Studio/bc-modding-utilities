@@ -63,7 +63,9 @@ export class CharacterTagInstance {
         this.localTag[name] = tag;
 
         const tagPlayer = () => {
+            //@ts-ignore
             Player[ECHO_INFO_TAG] = {
+                //@ts-ignore
                 ...Player[ECHO_INFO_TAG],
                 [name]: tag,
             };
@@ -89,12 +91,17 @@ export class CharacterTagInstance {
         if (data.Content !== ECHO_INFO_TAG) return;
         if (!Array.isArray(data.Dictionary)) return;
 
-        const receivedTag = /** @type {any[]}*/ (data.Dictionary).find((d) => d.Type === ECHO_INFO_TAG);
+        const receivedTag = /** @type {any[]}*/ (data.Dictionary).find(
+            (d) => d.Type === ECHO_INFO_TAG
+        );
         if (!receivedTag) return;
         const { Content } = receivedTag;
 
-        const fromChara = ChatRoomCharacter.find((c) => c.MemberNumber === data.Sender);
+        const fromChara = ChatRoomCharacter.find(
+            (c) => c.MemberNumber === data.Sender
+        );
         if (!fromChara) return;
+        // @ts-ignore
         fromChara[ECHO_INFO_TAG] = Content;
     }
 
@@ -104,6 +111,7 @@ export class CharacterTagInstance {
      * @returns {CharacterTagItem | undefined}
      */
     get(C, key) {
+        // @ts-ignore
         return C[ECHO_INFO_TAG]?.[key];
     }
 }
@@ -138,9 +146,11 @@ export class CharacterTag {
         if (instance.hooked) return;
         instance.hooked = true;
 
-        HookManager.progressiveHook("ChatRoomSyncMemberJoin", 10).inject((args, _) => {
-            this.instance.send(args[0].SourceMemberNumber);
-        });
+        HookManager.progressiveHook("ChatRoomSyncMemberJoin", 10).inject(
+            (args, _) => {
+                this.instance.send(args[0].SourceMemberNumber);
+            }
+        );
 
         HookManager.progressiveHook("ChatRoomSync", 10).inject(() => {
             this.instance.send();

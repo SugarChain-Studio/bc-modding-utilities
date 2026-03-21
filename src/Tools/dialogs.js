@@ -42,6 +42,7 @@ export class DialogTools {
                 }
             };
 
+            /** @type {(key: string, value: string) => void} */
             const tryWrite = (key, value) => {
                 if (!pv[key]) pv[key] = value;
             };
@@ -76,6 +77,7 @@ export class DialogTools {
     static pickEntry(translation, key) {
         const ret = {};
         for (const lang in translation) {
+            // @ts-ignore
             ret[lang] = translation[lang][key] || key;
         }
         return ret;
@@ -121,10 +123,13 @@ export class DialogTools {
         };
 
         for (const lang in assetStrings) {
+            // @ts-ignore
             ret[lang] = { ...assetStrings[lang] };
             if (lang in krder) {
                 keys.forEach(({ from, to }) => {
+                    // @ts-ignore
                     ret[lang][to] =
+                        // @ts-ignore
                         krder[lang](from, assetStrings[lang]) ||
                         krder["CN"](from, assetStrings["CN"]);
                 });
@@ -243,6 +248,7 @@ export class DialogTools {
                 Object.fromEntries(
                     Object.entries(cur).map(([lang, entries]) => [
                         lang,
+                        // @ts-ignore
                         { ...(acc[lang] || {}), ...entries },
                     ])
                 ),

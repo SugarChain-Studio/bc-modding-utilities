@@ -1,3 +1,4 @@
+/** @type {(value: any) => boolean} */
 const isNullish = (value) => value === null || value === undefined;
 
 /**
