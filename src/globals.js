@@ -19,7 +19,9 @@ export class Globals {
      * 如果存储空间不存在，则初始化存储空间
      */
     static _initStorage() {
+        // @ts-ignore
         if (!globalThis[this._namespace]) {
+            // @ts-ignore
             globalThis[this._namespace] = {};
         }
     }
@@ -32,9 +34,12 @@ export class Globals {
      */
     static get(name, defaultValue) {
         this._initStorage();
+        // @ts-ignore
         if (!(name in globalThis[this._namespace])) {
+            // @ts-ignore
             globalThis[this._namespace][name] = defaultValue();
         }
+        // @ts-ignore
         return globalThis[this._namespace][name];
     }
 
@@ -47,7 +52,12 @@ export class Globals {
      */
     static getMayOverride(name, defaultValue) {
         this._initStorage();
-        globalThis[this._namespace][name] = defaultValue(globalThis[this._namespace][name]);
+        // @ts-ignore
+        globalThis[this._namespace][name] = defaultValue(
+            // @ts-ignore
+            globalThis[this._namespace][name]
+        );
+        // @ts-ignore
         return globalThis[this._namespace][name];
     }
 
@@ -59,6 +69,7 @@ export class Globals {
      */
     static set(name, value) {
         this._initStorage();
+        // @ts-ignore
         globalThis[this._namespace][name] = value;
     }
 
@@ -69,6 +80,7 @@ export class Globals {
      */
     static has(name) {
         this._initStorage();
+        // @ts-ignore
         return name in globalThis[this._namespace];
     }
 
@@ -79,7 +91,9 @@ export class Globals {
      */
     static delete(name) {
         this._initStorage();
+        // @ts-ignore
         if (name in globalThis[this._namespace]) {
+            // @ts-ignore
             return delete globalThis[this._namespace][name];
         }
         return false;
@@ -94,9 +108,13 @@ export class Globals {
         const requiredMethods = ["get", "set", "has", "delete"];
 
         for (const method of requiredMethods) {
+            // @ts-ignore
             if (typeof implementation[method] !== "function") {
-                throw new Error(`Implementation must provide a '${method}' function`);
+                throw new Error(
+                    `Implementation must provide a '${method}' function`
+                );
             }
+            // @ts-ignore
             Globals[method] = implementation[method];
         }
     }
@@ -109,7 +127,8 @@ export class Globals {
      */
     static createNamespace(prefix) {
         return {
-            get: (name, defaultValue) => Globals.get(`${prefix}.${name}`, defaultValue),
+            get: (name, defaultValue) =>
+                Globals.get(`${prefix}.${name}`, defaultValue),
             set: (name, value) => Globals.set(`${prefix}.${name}`, value),
             has: (name) => Globals.has(`${prefix}.${name}`),
             delete: (name) => Globals.delete(`${prefix}.${name}`),
