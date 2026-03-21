@@ -1,4 +1,4 @@
-import { Optional } from "@mod-utils/monadic";
+import { Optional, monadic } from "@mod-utils/monadic";
 import { Constants } from "./constants";
 import { DialogTools } from "./dialogs";
 import { StateTools } from "./state";
@@ -142,6 +142,18 @@ export class Tools {
         return `Assets/${
             A.Group.Family
         }/${GroupName}/${poseSegment}${urlParts.join("_")}.png`;
+    }
+
+    /**
+     * 获取资源图并在可用时执行回调（monadic）
+     * @param {DynamicDrawingData<Record<string, unknown>>} drawData 绘制数据
+     * @param {string} [OverrideName] 代替图层名，如果不提供则使用 drawData.L
+     * @returns {Optional<HTMLImageElement, {}>}
+     */
+    static getAssetImageThen(drawData, OverrideName) {
+        return monadic(this.getAssetURL(drawData, OverrideName))
+            .then((url) => DrawGetImage(url))
+            .filter((img) => img.complete);
     }
 
     /**
