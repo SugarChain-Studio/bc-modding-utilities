@@ -532,7 +532,8 @@ async function createModRollupConfig({
     const config = defineConfig({
         input: `${env.curDir}/${rollupSetting.input}`,
         output: {
-            file: `${env.destDir}/${rollupSetting.output}`,
+            dir: env.destDir,
+            entryFileNames: rollupSetting.output,
             format: "esm",
             sourcemap: env.debug ? "inline" : true,
             banner,
