@@ -505,8 +505,16 @@ async function writeAssetOverrides({ env, rollupSetting }) {
  * @param { ReturnType<typeof parseEnv> } param0.env 环境参数
  * @param { object } param0.packageJSON package.json对象
  * @param { string } [param0.banner] 可选的banner字符串
+ * @param { import("@rollup/plugin-alias").Alias } [param0.aliasOpt] 可选的rollup alias插件配置
+ * @param { import("rollup").RollupOptions["output"] } [param0.output] 附加output配置，覆盖默认的output配置
  */
-async function createModRollupConfig({ env, packageJSON, banner = "" }) {
+async function createModRollupConfig({
+    env,
+    packageJSON,
+    banner = "",
+    aliasOpt = {},
+    output,
+}) {
     const modInfo = buildModInfo(packageJSON);
     const rollupSetting = buildRollupSetting(packageJSON, env);
 
@@ -525,9 +533,10 @@ async function createModRollupConfig({ env, packageJSON, banner = "" }) {
         input: `${env.curDir}/${rollupSetting.input}`,
         output: {
             file: `${env.destDir}/${rollupSetting.output}`,
-            format: "iife",
+            format: "esm",
             sourcemap: env.debug ? "inline" : true,
             banner,
+            ...output,
         },
         treeshake: true,
         external: [
@@ -571,6 +580,7 @@ async function createModRollupConfig({ env, packageJSON, banner = "" }) {
             alias({
                 entries: {
                     "@mod-utils": `${env.curDir}/${env.utilDir}/src`,
+                    ...aliasOpt,
                 },
             }),
             commonjs(),
