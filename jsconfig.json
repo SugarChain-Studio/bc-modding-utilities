@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "allowJs": true,
+        "lib": ["es2022", "dom"],
+        "strictFunctionTypes": false,
+        "noImplicitAny": true,
+        "baseUrl": ".",
+        "paths": {
+            "@mod-utils/*": ["./src/*"],
+        }
+    },
+    "include": [
+        "utils/src/**/*.js",
+        "src/**/*.js",
+        "src/**/Typedef.d.ts",
+        "utils/src/**/Typedef.d.ts",
+        "node_modules/bc-stubs/bc/**/*.d.ts"
+    ]
+}
