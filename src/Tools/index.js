@@ -117,7 +117,8 @@ export class Tools {
 
     /**
      * 获取物品图片资源URL
-     * @param {DynamicDrawingData<Record<string, unknown>>} drawData 绘制数据
+     * @template {AnimationPersistentData} T
+     * @param {DynamicDrawingData<T>} drawData 绘制数据
      * @param {string} [OverrideName] 代替图层名，如果不提供则使用 drawData.L
      */
     static getAssetURL(drawData, OverrideName) {
@@ -148,7 +149,8 @@ export class Tools {
 
     /**
      * 获取资源图并在可用时执行回调（monadic）
-     * @param {DynamicDrawingData<Record<string, unknown>>} drawData 绘制数据
+     * @template {AnimationPersistentData} T
+     * @param {DynamicDrawingData<T>} drawData 绘制数据
      * @param {string} [OverrideName] 代替图层名，如果不提供则使用 drawData.L
      * @returns {Optional<HTMLImageElement, {}>}
      */
