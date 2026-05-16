@@ -40,6 +40,53 @@ const ItemGroups = [
 export { DialogTools };
 export { StateTools };
 
+export class _ColorTools {
+    /**
+     * @param {string} hex
+     * @returns {{r: number, g: number, b: number} | null}
+     */
+    hexToRgb(hex) {
+        const match = hex.replace("#", "").match(/.{1,2}/g);
+        if (!match) return null;
+        return {
+            r: parseInt(match[0], 16),
+            g: parseInt(match[1], 16),
+            b: parseInt(match[2], 16),
+        };
+    }
+
+    /**
+     * @param {{r: number, g: number, b: number}} rgb
+     * @return {string}
+     */
+    rgbToHex({ r, g, b }) {
+        return `#${[r, g, b]
+            .map((x) => {
+                const hex = x.toString(16);
+                return hex.length === 1 ? `0${hex}` : hex;
+            })
+            .join("")}`;
+    }
+
+    /**
+     * @param {string} color1
+     * @param {string} color2
+     * @param {number} t
+     * @returns {string}
+     */
+    interpolateColor(color1, color2, t) {
+        const c1 = this.hexToRgb(color1);
+        const c2 = this.hexToRgb(color2);
+        if (!c1 || !c2) return color1;
+        const r = Math.round(c1.r + (c2.r - c1.r) * t);
+        const g = Math.round(c1.g + (c2.g - c1.g) * t);
+        const b = Math.round(c1.b + (c2.b - c1.b) * t);
+        return this.rgbToHex({ r, g, b });
+    }
+}
+
+export const ColorTools = new _ColorTools();
+
 export class Tools {
     /**
      * 查找角色
