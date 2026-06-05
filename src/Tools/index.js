@@ -173,7 +173,7 @@ export class Tools {
 
         const layer = A.Layer.find((l) => l.Name === L);
 
-        let poseSegment = layer.PoseMapping[Pose];
+        let poseSegment = Pose === "" ? "" : layer.PoseMapping[Pose];
         switch (poseSegment) {
             case PoseType.HIDE:
             case PoseType.DEFAULT:
