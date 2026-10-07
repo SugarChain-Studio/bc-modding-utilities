@@ -53,12 +53,12 @@ export function findDrawOrderPair(C, characters) {
 }
 
 /**
- * @returns {{oldList: (Character)[], newList: (Character)[], pairedSet: Set<number>}}
+ * @returns {{oldList: (OnlineCharacter)[], newList: (OnlineCharacter)[], pairedSet: Set<number>}}
  */
 function reorderedChatRoomCharacter() {
     const oldList = ChatRoomCharacter;
 
-    /** @type {(Character)[]} */
+    /** @type {(OnlineCharacter)[]} */
     const newList = [];
 
     // push all characters with nextCharacter to the end of the list
@@ -176,7 +176,7 @@ export function setupXCharacterDrawlist() {
 
     const func = HookManager.randomGlobalFunction(
         "CheckXLine",
-        /** @type {(characters: Character[], charsPerRow: number) => boolean} */
+        /** @type {(characters: OnlineCharacter[], charsPerRow: number) => boolean} */
         (characters, charsPerRow) => {
             if (characters.length <= charsPerRow) return false;
 

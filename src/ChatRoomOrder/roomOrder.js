@@ -72,7 +72,7 @@ class ChatRoomOrder_ {
 
     /**
      * 如果两个人物被设置为配对绘制，返回两个人物和参考中心
-     * @param {Character} C
+     * @param {OnlineCharacter} C
      * @returns {SharedCenterState | undefined} 如果没找到，返回undefined
      */
     requireSharedCenter(C) {

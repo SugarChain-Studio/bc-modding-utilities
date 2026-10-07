@@ -18,7 +18,7 @@ interface XCharacterDrawState {
 
 interface XCharacterDrawOrderBase {
     drawState?: XCharacterDrawState;
-    leash?: 'lead' | 'follow';
+    leash?: "lead" | "follow";
 }
 
 interface XCharacterDrawOrderAssetState {
@@ -44,7 +44,7 @@ type XCharacterDrawOrderState = PrevOrNextXCharacter &
 
 type XCharacter = {
     XCharacterDrawOrder?: XCharacterDrawOrderState;
-} & Character;
+} & OnlineCharacter;
 
 interface CharaPair<T> {
     prev: T;
@@ -59,17 +59,17 @@ type XCharaPairTimerState = CharaPair<XCharacterDrawOrderTimerState>;
 type DrawOffsetParam = XCharacterDrawState;
 
 type DrawOffsetPipelineFunction = (
-    C: Character,
+    C: OnlineCharacter,
     from: DrawOffsetParam
 ) => DrawOffsetParam;
 
 type DrawOffsetFunction = (
-    C: Character,
+    C: OnlineCharacter,
     from: DrawOffsetParam
 ) => DrawOffsetParam | void;
 
 type CustomAssetDefinition =
-    import('@sugarch/bc-mod-types').CustomAssetDefinition<CustomGroupName>;
+    import("@sugarch/bc-mod-types").CustomAssetDefinition<CustomGroupName>;
 
 type SharedCenterState = {
     prev: XCharacter;
@@ -81,7 +81,7 @@ type SharedCenterState = {
 type CtxDrawMods = {
     sharedC: SharedCenterState;
     initState: DrawOffsetParam;
-    C: Character;
+    C: OnlineCharacter;
 };
 
 type DrawModifierCallback<T> = (

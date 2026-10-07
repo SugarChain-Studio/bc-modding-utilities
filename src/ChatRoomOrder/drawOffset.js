@@ -6,6 +6,14 @@ const DrawOffsetInstanceName = "Luzi_DrawOffsetInstance";
 /** @type {DrawOffsetPipelineFunction} */
 const defaultFunc = (_, from) => from;
 
+/**
+ * @param {Character} c
+ * @returns {c is OnlineCharacter}
+ */
+function isOnlineCharacter(c) {
+    return typeof c.MemberNumber === "number";
+}
+
 const modifierPipeline = globalPipeline(
     DrawOffsetInstanceName,
     defaultFunc,
@@ -14,6 +22,7 @@ const modifierPipeline = globalPipeline(
             .inside("ChatRoomCharacterViewLoopCharacters")
             .inject((args) => {
                 const [C, X, Y, Zoom] = args;
+                if (!isOnlineCharacter(C)) return;
                 const result = pipeline.run(C, { X, Y, Zoom });
                 args[1] = result.X;
                 args[2] = result.Y;
