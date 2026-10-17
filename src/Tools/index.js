@@ -204,7 +204,8 @@ export class Tools {
     static getAssetImageThen(drawData, OverrideName) {
         return monadic(this.getAssetURL(drawData, OverrideName))
             .then((url) => DrawGetImage(url))
-            .filter((img) => img.complete);
+            // R133+: DrawGetImage returns undefined until loaded, then an ImageBitmap, which has no .complete
+            .filter((img) => !(img instanceof HTMLImageElement) || img.complete);
     }
 
     /**
