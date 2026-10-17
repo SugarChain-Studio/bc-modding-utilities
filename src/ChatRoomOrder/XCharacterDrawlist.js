@@ -208,6 +208,9 @@ export function setupXCharacterDrawlist() {
 
     HookManager.patchFunction("ChatRoomCharacterViewDraw", {
         "ChatRoomCharacterViewLoopCharacters(": `const xlineFlag = ${func}(ChatRoomCharacterDrawlist, charsPerRow); ChatRoomCharacterViewLoopCharacters(`,
+        // R133+ guards the background branch with `backgroundURL &&`
+        "if (backgroundURL && charIdx % charsPerRow === 0) {": `const [pflag, pidx] = ${func2}(xlineFlag, charsPerRow, charIdx); if (backgroundURL && pflag) {`,
+        // R132 and earlier
         "if (charIdx % charsPerRow === 0) {": `const [pflag, pidx] = ${func2}(xlineFlag, charsPerRow, charIdx); if (pflag) {`,
         "RectMakeRect(0, Y + charIdx * 100, viewWidth, viewHeight * roomZoom);":
             "RectMakeRect(0, Y + pidx * 100, viewWidth, viewHeight * roomZoom);",
