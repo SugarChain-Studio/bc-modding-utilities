@@ -1,4 +1,11 @@
-/** @param {AssetPoseMapping} poseMapping */
+/**
+ * 收集姿势映射中所有可用的姿势目录片段。
+ *
+ * 遍历游戏的全部姿势，取出该映射中未设置为 Hide 的目标姿势并去重；
+ * 结果固定以 "" 开头，表示不带姿势子目录的图片路径。
+ * @param {AssetPoseMapping} poseMapping
+ * @returns {string[]} 目录片段列表，例如 ["", "Kneel/", "KneelingSpread/"]
+ */
 function poseMappingSegments(poseMapping) {
     return PoseFemale3DCG.reduce(
         (acc, cur) => {
@@ -19,9 +26,14 @@ function poseMappingSegments(poseMapping) {
  */
 
 /**
+ * 获取图层类型后缀，用于拼接不同 LayerType 对应的图片文件名。
+ *
+ * `CreateLayerTypes` 只声明了类型字段名（如 "typed"）：优先从图层的 AllowTypes
+ * 中收集实际取值，得到 "typed0"、"typed1" 之类的后缀；若没有 AllowTypes，
+ * 则回退到物品配置（模块化 / 类型化）中的全部选项。
  * @param {NonNullable<CustomAssetDefinition["Layer"]>[0]} layer
  * @param {ExtendedItemConfig<TypedItemOption> | undefined} config
- * @returns {string[]}
+ * @returns {string[]} 类型后缀列表，例如 ["typed0", "typed1"]
  */
 function layerTypesSegs(layer, config) {
     const layerType = layer.CreateLayerTypes?.[0];
@@ -72,6 +84,10 @@ function layerTypesSegs(layer, config) {
  */
 export class ImageMapTools {
     /**
+     * 生成图层的图片路径。
+     *
+     * 结果为 `Assets/Female3DCG/{group}/[pose/]{layerName}.png`，
+     * 传入 pose 时会在组名与文件名之间插入姿势子目录。
      * @param {CustomGroupName} group
      * @param {string} layerName
      * @param {AssetPoseName} [pose]
@@ -84,6 +100,7 @@ export class ImageMapTools {
     }
 
     /**
+     * 生成物品预览图的路径：`Assets/Female3DCG/{group}/Preview/{assetName}.png`
      * @param {CustomGroupName} group
      * @param {string} assetName
      * @returns {string}
@@ -93,6 +110,7 @@ export class ImageMapTools {
     }
 
     /**
+     * 生成物品选项图标的路径：`Screens/Inventory/{group}/{assetName}/{optionName}.png`
      * @param {CustomGroupName} group
      * @param {string} assetName
      * @param {string} optionName
@@ -103,8 +121,12 @@ export class ImageMapTools {
     }
 
     /**
-     * @param {ImageMapType} from
-     * @param {ImageMapType} to
+     * 生成一条 ImageMapping：让 `to` 描述的图片位置改用 `from` 描述的图片。
+     *
+     * 返回对象形如 `{ [to 路径]: from 路径 }`：键是游戏请求的路径，
+     * 值是实际加载的路径。
+     * @param {ImageMapType} from 实际图片所在位置
+     * @param {ImageMapType} to 需要被替换的图片位置
      * @returns { Record<string,string> }
      */
     static mappingPath(from, to) {
@@ -123,7 +145,9 @@ export class ImageMapTools {
     }
 
     /**
-     * 产生一个可以用于ImageMapping的映射对象，用于将某个BodyType的图片映射到其他的BodyType
+     * 产生一个可以用于ImageMapping的映射对象，用于将某个BodyType的图片映射到其他的BodyType。
+     *
+     * 返回值形如 `{ [目标体型的图片路径]: 来源体型的图片路径 }`，即让目标体型的图层复用来源体型的图片。
      * 只支持CreateLayerTypes长度为1的情况
      * @param {CustomGroupName| CustomGroupName[]} group 物品所在的组
      * @param {CustomAssetDefinition} asset 物品定义
