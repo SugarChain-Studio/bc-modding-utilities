@@ -195,6 +195,19 @@ export class Tools {
     }
 
     /**
+     * 获取资源图并在可用时执行回调（monadic）
+     * @template {AnimationPersistentData} T
+     * @param {DynamicDrawingData<T>} drawData 绘制数据
+     * @param {string} [OverrideName] 代替图层名，如果不提供则使用 drawData.L
+     * @returns {Optional<HTMLImageElement, {}>}
+     */
+    static getAssetImageThen(drawData, OverrideName) {
+        return monadic(this.getAssetURL(drawData, OverrideName)).then((url) =>
+            DrawGetImage(url)
+        );
+    }
+
+    /**
      *
      * @param {number} itemCount
      * @returns {ExtendedItemConfigDrawData<Partial<ElementMetaData.Modular>>}
